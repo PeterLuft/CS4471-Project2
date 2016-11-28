@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/game/game.js" line="114" mnemonic="0" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="79923f6f-7876-4a38-b091-642d24e5241a" name="Default" comment="" />
     <ignored path="GameProject2.iws" />
@@ -28,7 +31,7 @@
           <file leaf-file-name="game.html" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/game/game.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="318">
+                <state relative-caret-position="945">
                   <caret line="75" column="0" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
                   <folding />
                 </state>
@@ -38,8 +41,8 @@
           <file leaf-file-name="game.js" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/game/game.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="270">
-                  <caret line="158" column="4" selection-start-line="158" selection-start-column="4" selection-end-line="158" selection-end-column="4" />
+                <state relative-caret-position="840">
+                  <caret line="105" column="16" selection-start-line="105" selection-start-column="16" selection-end-line="105" selection-end-column="16" />
                   <folding />
                 </state>
               </provider>
@@ -52,8 +55,8 @@
           <file leaf-file-name="shadedSphere3.js" pinned="false" current-in-tab="true">
             <entry file="file://$USER_HOME$/Desktop/Graphics/AngelWEBGL/angelChap6/shadedSphere3.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="177">
-                  <caret line="205" column="14" selection-start-line="205" selection-start-column="14" selection-end-line="205" selection-end-column="14" />
+                <state relative-caret-position="747">
+                  <caret line="216" column="4" selection-start-line="216" selection-start-column="4" selection-end-line="216" selection-end-column="4" />
                   <folding />
                 </state>
               </provider>
@@ -62,7 +65,7 @@
           <file leaf-file-name="shadedSphere3.html" pinned="false" current-in-tab="false">
             <entry file="file://$USER_HOME$/Desktop/Graphics/AngelWEBGL/angelChap6/shadedSphere3.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="363">
+                <state relative-caret-position="1245">
                   <caret line="83" column="0" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
                   <folding />
                 </state>
@@ -85,6 +88,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/game/game.html" />
+        <option value="$USER_HOME$/Desktop/Graphics/AngelWEBGL/angelChap6/shadedSphere3.js" />
         <option value="$PROJECT_DIR$/game/game.js" />
       </list>
     </option>
@@ -199,12 +203,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1480290428984</updated>
-      <workItem from="1480290430255" duration="6936000" />
+      <workItem from="1480290430255" duration="9850000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6936000" />
+    <option name="totallyTimeSpent" value="9850000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
@@ -216,7 +220,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32892805" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -272,7 +276,7 @@
     </entry>
     <entry file="file://$USER_HOME$/Desktop/Graphics/AngelWEBGL/angelChap6/shadedSphere3.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="363">
+        <state relative-caret-position="1245">
           <caret line="83" column="0" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
           <folding />
         </state>
@@ -280,7 +284,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/game/game.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="318">
+        <state relative-caret-position="945">
           <caret line="75" column="0" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
           <folding />
         </state>
@@ -288,16 +292,16 @@
     </entry>
     <entry file="file://$USER_HOME$/Desktop/Graphics/AngelWEBGL/angelChap6/shadedSphere3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="177">
-          <caret line="205" column="14" selection-start-line="205" selection-start-column="14" selection-end-line="205" selection-end-column="14" />
+        <state relative-caret-position="747">
+          <caret line="216" column="4" selection-start-line="216" selection-start-column="4" selection-end-line="216" selection-end-column="4" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/game/game.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="158" column="4" selection-start-line="158" selection-start-column="4" selection-end-line="158" selection-end-column="4" />
+        <state relative-caret-position="840">
+          <caret line="105" column="16" selection-start-line="105" selection-start-column="16" selection-end-line="105" selection-end-column="16" />
           <folding />
         </state>
       </provider>
