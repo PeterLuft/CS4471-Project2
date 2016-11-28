@@ -1,3 +1,5 @@
+//alert(print_r(your array));  //call it like this
+
 // Game wide constants
 var canvas;
 var gl;
@@ -26,7 +28,7 @@ var gameView;
 
 
 // Lighting and 3D related variables
-var numTimesToSubdivide = 3;
+var numTimesToSubdivide = 6;
 
 var index = 0;
 
@@ -142,11 +144,13 @@ window.onkeydown = function(e){
 
 
 
-}
+};
 
 window.onload = function init() {
 
     canvas = document.getElementById( "gl-canvas" );
+
+    canvas.addEventListener('click', canvasClicked);
 
     // Setting up HTML references
     menuControl = document.getElementsByClassName("menu-control")[0];
@@ -210,7 +214,7 @@ window.onload = function init() {
     gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
 
     render();
-}
+};
 
 // Render shapes to the screen
 function render(){
@@ -226,8 +230,11 @@ function render(){
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
+    // Render the sphere to the canvas
     for( var i=0; i<index; i+=3)
         gl.drawArrays( gl.TRIANGLES, i, 3 );
+
+
 
     window.requestAnimFrame(render);
 }
@@ -243,6 +250,8 @@ function bacteria(points){
     b.color = Math.floor( Math.random() * 4); console.log(b.color);
     b.start = start;
     b.alive = true; // Flip this flag to mark for overwrite when inserting new bacteria so we can reuse buffer space
+
+
     // TODO keep and rework into 3 dimensions
     b.grow = function() { // Add another 'unit' to the bacteria
         var center = points[0]; // First point of bacteria represents center point
@@ -270,6 +279,13 @@ function bacteria(points){
     };
     active_bacteria++;
     return b;
+}
+
+// Creates the points for a new bacteria
+function Bacteria(start) {
+    var vertices = [];
+    vertices.push(vec3(cx + Math.cos(start + i*bacteria_unit_width + circumference)*(radius), cy + Math.sin(start + i*bacteria_unit_width + circumference)*(radius), 0));
+    return vertices;
 }
 
 // Top Level Game Control Functions moved over from Project 1
@@ -377,9 +393,50 @@ function countdown(){
         time = 0;
         document.getElementById("time_value").innerHTML = time;
 
-        
+
     }
 
+}
+
+
+
+function canvasClicked(event) {
+    //gets coordinates of click
+    console.log("Canvas clicked");
+    var rect = canvas.getBoundingClientRect();
+    var x = event.clientX - rect.left;
+    var y = event.clientY - rect.top;
+
+    // Move the canvas coordinates in range of the clipping region (-1 to 1)
+    x =((x * 2/canvas.width)  -1);
+    y =-1*((y * 2/canvas.height) -1);
+
+    console.log("Y: " + y);
+    console.log("X: " + x);
+
+    // TODO update hit detection to work in 3 dimensions
+
+    // Draw a line from the screen's x/y coordinates through the 3d area and catch any intersections with the bacteria
+    // Z dimension will still equal zero, line will be perpendicular to the screen
+
+    ////Perform mouse on bacteria hit detection
+    //for (var i = 0; i < bacteria_list.length; i++) {
+    //
+    //    // Find the center index of the bacteria (usually the width in units, if a merge happens it might be off center, but will still detect the hit)
+    //    var center_index = (bacteria_list[i].right_edge - bacteria_list[i].left_edge)/2 + bacteria_list[i].left_edge;
+    //
+    //    // Determine if there is an intersection between the line drawn from the mouse to the origin, and either line from the edge of the bacteria to a point
+    //    // near the bacteria's center
+    //    if (detect_hit(x, y, bacteria_list[i].points[bacteria_list[i].left_edge], bacteria_list[i].points[center_index]) ||
+    //        detect_hit(x, y, bacteria_list[i].points[center_index], bacteria_list[i].points[bacteria_list[i].right_edge]) ||
+    //        detect_hit(x, y, bacteria_list[i].points[bacteria_list[i].left_edge], bacteria_list[i].points[bacteria_list[i].right_edge])) {
+    //        if (bacteria_list[i].alive) {
+    //            console.log("BACTERIA HIT ON: " + bacteria_list[i].order);
+    //            bacteria_list[i].die();
+    //            update_score(5);
+    //        }
+    //    }
+    //}
 }
 
 
