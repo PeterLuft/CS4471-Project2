@@ -1,9 +1,3 @@
-var canvas;
-var gl;
-
-//alert(print_r(your array));  //call it like this
-
-
 // Game wide constants
 var canvas;
 var gl;
@@ -17,9 +11,18 @@ var score = 0; // Increase when a bacteria spends a tick at max length
 var hi_score = 0;
 
 var time = 5.000;
+var game_over = false;
+// Second boolean variable for control flow of menu and game
+var playing = false;
 
 
 
+// References to HTML views
+var gameoverView;
+var winView;
+var gameControl;
+var menuControl;
+var gameView;
 
 
 // Lighting and 3D related variables
@@ -145,6 +148,19 @@ window.onload = function init() {
 
     canvas = document.getElementById( "gl-canvas" );
 
+    // Setting up HTML references
+    menuControl = document.getElementsByClassName("menu-control")[0];
+    gameControl = document.getElementById("game-control");
+    gameoverView = document.getElementById("gameover-view");
+    winView = document.getElementById("win-view");
+    gameView = document.getElementById("game-view");
+
+    gameControl.style.display = 'none';
+    gameView.style.display = 'none';
+    gameoverView.style.display = 'none';
+    winview.style.display = 'none';
+
+
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
@@ -259,10 +275,110 @@ function bacteria(points){
 // Top Level Game Control Functions moved over from Project 1
 
 function startPressed(){
-
+    launch();
+    menuControl.style.display = 'none';
+    gameView.style.display = 'block';
+    gameControl.style.display = 'block';
 }
 
 function quitPressed(){
+    quit();
+    gameControl.style.display = 'none';
+    gameView.style.display = 'none';
+    menuControl.style.display = 'block';
+    gameoverView.style.display = 'none';
+    winView.style.display = 'none';
+}
+
+function replayPressed(){
+    quit();
+    launch();
+    hi_score = 0;
+    document.getElementById("hi_score_value").innerHTML = 0;
+    gameView.style.display = 'block';
+    gameoverView.style.display = 'none';
+    winView.style.display = 'none';
+    menuControl.style.display = 'none';
+    gameControl.style.display = 'block';
+}
+
+function loseGame(){
+    gameOver();
+    gameControl.style.display = 'none';
+    gameoverView.style.display = 'block';
+}
+
+function winGame(){
+    gameOver();
+    gameControl.style.display = 'none';
+    winView.style.display = 'block';
+}
+
+//Lower Game Control Functions
+function launch(){
+    document.getElementById("score_value").innerHTML = score;
+    gl.clear( gl.COLOR_BUFFER_BIT );
+    console.log("Launching game session...");
+    game_over = false;
+    playing = true;
+    document.getElementById("time_value").innerHTML = 30;
+
+    //TODO Initialize the timed game elements
+
+}
+
+function quit(){
+    console.log("Quitting game session...");
+    // set gameover to false and reset all variables
+    gameOver();
+    game_over = true;
+    playing = false;
+}
+
+function difficulty_up(){
+    //TODO change difficulty based on 3D game
+}
+
+function gameOver(){
+    //Instance of game has ended
+    game_over = true;
+    //TODO remove intervals and all game data once created
+    score = 0;
+    time = 30.0000;
+    console.log("game over, values cleared");
+}
+
+function update_score(value){
+    // Update the game score
+    if(score < 0){
+        score = 0;
+        document.getElementById("score_value").innerHTML = score;
+        loseGame();
+    }else if (game_over == false){
+        score += value;
+        document.getElementById("score_value").innerHTML = score;
+
+        if (hi_score < score) {
+            hi_score = score;
+            document.getElementById("hi_score_value").innerHTML = hi_score;
+        }
+    }
+
+}
+
+function countdown(){
+    if(game_over != true && time > 0.00){
+        time -= 1;
+        console.log(time);
+        document.getElementById("time_value").innerHTML = time;
+    }
+    else{
+        //TODO player reached the time limit. Stop spawning more bacteria
+        time = 0;
+        document.getElementById("time_value").innerHTML = time;
+
+        
+    }
 
 }
 
