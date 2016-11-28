@@ -2,7 +2,25 @@
  * Created by pwluft on 2016-11-27.
  */
 
+// Game wide constants
+var canvas;
+var gl;
+var radius = 0.5; //Defines circle width and bacteria distance from origin
+var cx = 0; // center sphere at origin
+var cy = 0; // center sphere at origin
+var cz = 0; // center sphere at origin
+var num_points = 35; // Number of points to make up the circle
 
+var score = 0; // Increase when a bacteria spends a tick at max length
+var hi_score = 0;
+
+var time = 5.000;
+
+
+
+
+
+// Lighting and 3D related variables
 var numTimesToSubdivide = 3;
 
 var index = 0;
@@ -49,6 +67,7 @@ var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
 
+// FUNCTIONS FOR DRAWING THE SPHERE
 function triangle(a, b, c){
 
     var t1 = subtract(b, a);
@@ -164,7 +183,7 @@ window.onload = function init() {
 }
 
 
-
+// Render shapes to the screen
 function render(){
 
 
@@ -186,6 +205,56 @@ function render(){
     }
 
     window.requestAnimFrame(render);
+
+}
+
+// Function for the bacteria to draw over the sphere
+function bacteria(points){
+    var b = {};
+    if (points == null) {
+        b.points = Bacteria(width, start, height);
+    }else{
+        b.points = points;
+    }
+    b.color = Math.floor( Math.random() * 4); console.log(b.color);
+    b.start = start;
+    b.alive = true; // Flip this flag to mark for overwrite when inserting new bacteria so we can reuse buffer space
+    // TODO keep and rework into 3 dimensions
+    b.grow = function() { // Add another 'unit' to the bacteria
+        var center = points[0]; // First point of bacteria represents center point
+        // Once bacteria reaches its max size, stop growing it and subtract points from the player on growth
+        // Distance between the center and one of the outer points is used to determine the size
+        if ( Math.sqrt(
+                Math.pow(points[1].x - center.x),2) +
+            Math.pow((points[1].x - center.x),2) +
+            Math.pow((points[1].z - center.z),2)
+        ) {
+            update_score(-1);
+        }else{
+            for(var i = 0; i < points.length; i++) {
+                // Move each point along the vector between the center and the point itself
+                points[i].x += (points[i].x - center.x) * 1.10;
+                points[i].y += (points[i].y - center.y) * 1.10;
+                points[i].z += (points[i].z = center.z) * 1.10;
+            }
+        }
+        // TODO update the points inside the buffer to reflect the new bacteria points in the program
+    };
+    b.die = function() {
+        b.alive = false;
+        active_bacteria--;
+    };
+    active_bacteria++;
+    return b;
+}
+
+// Top Level Game Control Functions moved over from Project 1
+
+function startPressed(){
+
+}
+
+function quitPressed(){
 
 }
 

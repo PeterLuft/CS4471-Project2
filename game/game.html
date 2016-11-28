@@ -69,25 +69,61 @@ main()
 }
 </script>
 
-
-
-
 <p> </p>
 
 
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
-
 <script type="text/javascript" src="../Common/MV.js"></script>
 <script type="text/javascript" src="game.js"></script>
 
 <body>
 
-<h1>hello</h1>
+<div class="menu-control">
+    <h1>
+        Bacteria III: Making America Great Again
+    </h1>
+    <input type="button" value="START" onclick="startPressed()"
+</div>
+
+<div id="game-view">
+    <div id="score_div">POINTS  <span id="score_value" >0</span></div>
+    <div id="hi_score_div">HI-SCORE  <span id="hi_score_value" >0</span></div>
+    <div id="timer"><span id="time_value">0</span> SECONDS</div>
 
     <canvas id="gl-canvas" width="512" height="512">
     Whoops
     </canvas>
+
+    <div id="game-control">
+        <input type="button" value="QUIT" onclick="quitPressed()">
+    </div>
+
+    <div id="gameover-view">
+        GAME OVER
+        <div>
+            <input type="button" value="PLAY AGAIN" onclick="replayPressed()">
+            <input type="button" value="MENU" onclick="quitPressed()">
+        </div>
+    </div>
+
+    <div id="win-view">
+        YOU WIN
+        <div>
+            <input type="button" value="PLAY AGAIN" onclick="replayPressed()">
+            <input type="button" value="MENU" onclick="quitPressed()">
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+</div>
 
 </body>
 
