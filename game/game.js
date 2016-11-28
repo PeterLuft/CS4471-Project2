@@ -9,6 +9,12 @@ var cy = 0; // center sphere at origin
 var cz = 0; // center sphere at origin
 var num_points = 35; // Number of points to make up the circle
 
+var bacteria_list = [];
+
+var num_bacteria_points = 3;
+var azimuth = 0;
+var altitude = 0;
+
 var gamma = Math.PI*1.6; // Up to 2 PI radians
 var epsilon = Math.PI*0.7; // Up to PI radians
 
@@ -129,14 +135,23 @@ function tetrahedron(a, b, c, d, n) {
     divideTriangle(d,c,a, n);
 }
 
-
-
-
 window.onkeydown = function(e){
+
 
     var key = e.keyCode ? e.keyCode : e.which;
 
-
+    if(key == 38 && altitude < 7){
+        //up
+        console.log("Altitude keydown");
+        altitude += 1;
+        spawn_bacteria();
+    }
+    else if(key == 40 && altitude > 0){
+        //down
+        console.log("Altitude keydown");
+        altitude -= 1;
+        spawn_bacteria();
+    }
     if(key ==65 || key == 37){
         //left
         theta += dr;
@@ -145,8 +160,6 @@ window.onkeydown = function(e){
         //right
         theta -= dr;
     }
-
-
 
 };
 
@@ -241,10 +254,74 @@ function render(){
     for( var i=0; i<index; i+=3)
         gl.drawArrays( gl.TRIANGLES, i, 3 );
 
-    gl.drawArrays(gl.LINE_LOOP, index, 3);
+    gl.drawArrays(gl.LINE_LOOP , index, 3);
 
     window.requestAnimFrame(render);
 }
+
+function spawn_bacteria() {
+    console.log("spawn_bacteria");
+    if(game_over != true) {
+
+        // ADD NEW BACTERIA TO THE SURFACE if the probability allow it
+        //if (Math.floor((Math.random() * 100) < spawn_chance)) {
+        // 1 - Create a new bacteria in JS
+        var bact = bacteria();
+        // 2 - Add the bacteria to an existing slot or add at the end of the buffer
+        gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(bact.points));
+        //}
+    }
+}
+
+// Creates the points for a new bacteria
+function Bacteria() {
+    console.log("Bacteria");
+    var vertices = [];
+
+    // Distance of points from the origin
+    // size = 1 corresponds to points arriving on the sphere itself, triangle will intersect
+    // Sized close to one will likely result in the plane of triangle clipping through sphere
+    var size = 1.045;
+    console.log(size);
+
+    vertices.push(vec4(size * Math.sin(get_altitude(altitude+1.1)) * Math.cos(get_azimuth(2.5)),
+                        size * Math.sin(get_altitude(altitude+1.1)) * Math.sin(get_azimuth(2.5)),
+                        size * Math.cos(get_altitude(altitude+1.1)),
+                        1));
+
+    vertices.push(vec4(size * Math.sin(get_altitude(altitude+1.4)) * Math.cos(get_azimuth(2.5)),
+                        size * Math.sin(get_altitude(altitude+1.4)) * Math.sin(get_azimuth(2.5)),
+                        size * Math.cos(get_altitude(altitude+1.4)),
+                        1));
+
+    vertices.push(vec4(size * Math.sin(get_altitude(altitude+2)) * Math.cos(get_azimuth(2.5)),
+                        size * Math.sin(get_altitude(altitude+2)) * Math.sin(get_azimuth(2.5)),
+                        size * Math.cos(get_altitude(altitude+2)),
+                        1));
+    console.log(vertices);
+    return vertices;
+}
+
+function plot_new_point() {
+    vertices.push(vec4(size * Math.sin(get_altitude(altitude+2)) * Math.cos(get_azimuth(2.5)),
+        size * Math.sin(get_altitude(altitude+2)) * Math.sin(get_azimuth(2.5)),
+        size * Math.cos(get_altitude(altitude+2)),
+        1));
+    console.log(vertices);
+}
+
+
+// Move the value into the range (0-1)*Pi Radians for azimuth
+// Azimuth determines the latitude of the points along the sphere
+var get_altitude = function(value) {
+    return (value * Math.PI)/10
+};
+
+// Move the value into the range of (0-2)*Pi Radians for azimuth
+// Azimuth determines the longitude of the point along the sphere
+var get_azimuth = function(value) {
+    return (value * 2*Math.PI)/10;
+};
 
 // Function for the bacteria to draw over the sphere
 function bacteria(){
@@ -282,27 +359,7 @@ function bacteria(){
     return b;
 }
 
-// Creates the points for a new bacteria
-function Bacteria() {
-    console.log("Bacteria");
-    var vertices = [];
 
-    radius = 0.01;
-    console.log(radius);
-
-    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
-    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
-    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
-
-    //vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
-    //vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
-    //vertices.push(vec3(radius * Math.sin(gamma-radian/2) * Math.cos(epsilon+radian/2), radius * Math.sin(gamma-radian/2) * Math.sin(epsilon+radian/2), radius*Math.cos(gamma-radian/2)));
-    //vertices.push(vec3(radius * Math.sin(gamma-radian/2) * Math.cos(epsilon-radian/2), radius * Math.sin(gamma-radian/2) * Math.sin(epsilon-radian/2), radius*Math.cos(gamma-radian/2)));
-
-    radius = 1.5;
-    console.log(vertices);
-    return vertices;
-}
 
 // Top Level Game Control Functions moved over from Project 1
 
@@ -414,8 +471,6 @@ function countdown(){
 
 }
 
-
-
 function canvasClicked(event) {
     //gets coordinates of click
     console.log("Canvas clicked");
@@ -429,60 +484,9 @@ function canvasClicked(event) {
 
     console.log("Y: " + y);
     console.log("X: " + x);
-
-    // TODO update hit detection to work in 3 dimensions
-
-    // Draw a line from the screen's x/y coordinates through the 3d area and catch any intersections with the bacteria
-    // Z dimension will still equal zero, line will be perpendicular to the screen
-
-    ////Perform mouse on bacteria hit detection
-    //for (var i = 0; i < bacteria_list.length; i++) {
-    //
-    //    // Find the center index of the bacteria (usually the width in units, if a merge happens it might be off center, but will still detect the hit)
-    //    var center_index = (bacteria_list[i].right_edge - bacteria_list[i].left_edge)/2 + bacteria_list[i].left_edge;
-    //
-    //    // Determine if there is an intersection between the line drawn from the mouse to the origin, and either line from the edge of the bacteria to a point
-    //    // near the bacteria's center
-    //    if (detect_hit(x, y, bacteria_list[i].points[bacteria_list[i].left_edge], bacteria_list[i].points[center_index]) ||
-    //        detect_hit(x, y, bacteria_list[i].points[center_index], bacteria_list[i].points[bacteria_list[i].right_edge]) ||
-    //        detect_hit(x, y, bacteria_list[i].points[bacteria_list[i].left_edge], bacteria_list[i].points[bacteria_list[i].right_edge])) {
-    //        if (bacteria_list[i].alive) {
-    //            console.log("BACTERIA HIT ON: " + bacteria_list[i].order);
-    //            bacteria_list[i].die();
-    //            update_score(5);
-    //        }
-    //    }
-    //}
-
-
 }
 
-function spawn_bacteria() {
-    console.log("spawn_bacteria");
-    if(game_over != true) {
 
-        // ADD NEW BACTERIA TO THE SURFACE if the probability allow it
-        //if (Math.floor((Math.random() * 100) < spawn_chance)) {
-        // 1 - Create a new bacteria in JS
-        var bact = bacteria();
-
-        // Don't add to the list if it is not safe to spawn at this location.
-        //if (!safe_to_spawn(potential_bacteria)) {
-        //    console.error("BACTERIA CANNOT SPAWN HERE");
-        //    return;
-        //}
-
-        //bacteria_list.push(potential_bacteria);
-        //bacteria_counter++;
-        // 2 - Add the bacteria to an existing slot or add at the end of the buffer
-        console.log("ARRAY BUFFER LENGTH " + index);
-        console.log(bact.points);
-        console.log("normal's array:" + normalsArray.length);
-        console.log("Points array: " + pointsArray.length);
-        gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(bact.points));
-        //}
-    }
-}
 
 
 
