@@ -9,6 +9,9 @@ var cy = 0; // center sphere at origin
 var cz = 0; // center sphere at origin
 var num_points = 35; // Number of points to make up the circle
 
+var gamma = Math.PI*1.6; // Up to 2 PI radians
+var epsilon = Math.PI*0.7; // Up to PI radians
+
 var score = 0; // Increase when a bacteria spends a tick at max length
 var hi_score = 0;
 
@@ -35,6 +38,7 @@ var index = 0;
 var pointsArray = [];
 var normalsArray = [];
 
+var radian = 0.3;
 
 var near = -10;
 var far = 10;
@@ -153,16 +157,16 @@ window.onload = function init() {
     canvas.addEventListener('click', canvasClicked);
 
     // Setting up HTML references
-    menuControl = document.getElementsByClassName("menu-control")[0];
-    gameControl = document.getElementById("game-control");
-    gameoverView = document.getElementById("gameover-view");
-    winView = document.getElementById("win-view");
-    gameView = document.getElementById("game-view");
-
-    gameControl.style.display = 'none';
-    gameView.style.display = 'none';
-    gameoverView.style.display = 'none';
-    winview.style.display = 'none';
+    //menuControl = document.getElementsByClassName("menu-control")[0];
+    //gameControl = document.getElementById("game-control");
+    //gameoverView = document.getElementById("gameover-view");
+    //winView = document.getElementById("win-view");
+    //gameView = document.getElementById("game-view");
+    //
+    //gameControl.style.display = 'none';
+    //gameView.style.display = 'none';
+    //gameoverView.style.display = 'none';
+    //winView.style.display = 'none';
 
 
     gl = WebGLUtils.setupWebGL( canvas );
@@ -189,16 +193,17 @@ window.onload = function init() {
 
     var nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.STATIC_DRAW );
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(normalsArray));
 
     var vNormal = gl.getAttribLocation( program, "vNormal" );
     gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vNormal);
 
-
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
+    gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.DYNAMIC_DRAW );
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(pointsArray));
 
     var vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
@@ -212,6 +217,8 @@ window.onload = function init() {
     gl.uniform4fv( gl.getUniformLocation(program, "specularProduct"),flatten(specularProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
     gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
+
+    spawn_bacteria();
 
     render();
 };
@@ -234,23 +241,17 @@ function render(){
     for( var i=0; i<index; i+=3)
         gl.drawArrays( gl.TRIANGLES, i, 3 );
 
-
+    gl.drawArrays(gl.LINE_LOOP, index, 3);
 
     window.requestAnimFrame(render);
 }
 
 // Function for the bacteria to draw over the sphere
-function bacteria(points){
+function bacteria(){
     var b = {};
-    if (points == null) {
-        b.points = Bacteria(width, start, height);
-    }else{
-        b.points = points;
-    }
+    b.points = Bacteria();
     b.color = Math.floor( Math.random() * 4); console.log(b.color);
-    b.start = start;
     b.alive = true; // Flip this flag to mark for overwrite when inserting new bacteria so we can reuse buffer space
-
 
     // TODO keep and rework into 3 dimensions
     b.grow = function() { // Add another 'unit' to the bacteria
@@ -275,16 +276,31 @@ function bacteria(points){
     };
     b.die = function() {
         b.alive = false;
-        active_bacteria--;
+        //active_bacteria--;
     };
-    active_bacteria++;
+    //active_bacteria++;
     return b;
 }
 
 // Creates the points for a new bacteria
-function Bacteria(start) {
+function Bacteria() {
+    console.log("Bacteria");
     var vertices = [];
-    vertices.push(vec3(cx + Math.cos(start + i*bacteria_unit_width + circumference)*(radius), cy + Math.sin(start + i*bacteria_unit_width + circumference)*(radius), 0));
+
+    radius = 0.01;
+    console.log(radius);
+
+    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
+    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
+    vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
+
+    //vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
+    //vertices.push(vec3(radius * Math.sin(gamma) * Math.cos(epsilon), radius * Math.sin(gamma) * Math.sin(epsilon), radius*Math.cos(gamma)));
+    //vertices.push(vec3(radius * Math.sin(gamma-radian/2) * Math.cos(epsilon+radian/2), radius * Math.sin(gamma-radian/2) * Math.sin(epsilon+radian/2), radius*Math.cos(gamma-radian/2)));
+    //vertices.push(vec3(radius * Math.sin(gamma-radian/2) * Math.cos(epsilon-radian/2), radius * Math.sin(gamma-radian/2) * Math.sin(epsilon-radian/2), radius*Math.cos(gamma-radian/2)));
+
+    radius = 1.5;
+    console.log(vertices);
     return vertices;
 }
 
@@ -437,8 +453,36 @@ function canvasClicked(event) {
     //        }
     //    }
     //}
+
+
 }
 
+function spawn_bacteria() {
+    console.log("spawn_bacteria");
+    if(game_over != true) {
+
+        // ADD NEW BACTERIA TO THE SURFACE if the probability allow it
+        //if (Math.floor((Math.random() * 100) < spawn_chance)) {
+        // 1 - Create a new bacteria in JS
+        var bact = bacteria();
+
+        // Don't add to the list if it is not safe to spawn at this location.
+        //if (!safe_to_spawn(potential_bacteria)) {
+        //    console.error("BACTERIA CANNOT SPAWN HERE");
+        //    return;
+        //}
+
+        //bacteria_list.push(potential_bacteria);
+        //bacteria_counter++;
+        // 2 - Add the bacteria to an existing slot or add at the end of the buffer
+        console.log("ARRAY BUFFER LENGTH " + index);
+        console.log(bact.points);
+        console.log("normal's array:" + normalsArray.length);
+        console.log("Points array: " + pointsArray.length);
+        gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(bact.points));
+        //}
+    }
+}
 
 
 
