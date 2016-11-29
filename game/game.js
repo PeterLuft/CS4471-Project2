@@ -11,7 +11,7 @@ var num_points = 35; // Number of points to make up the circle
 
 var bacteria_list = [];
 
-var num_bacteria_points = 3;
+var num_bacteria_points = 0;
 var azimuth = 0;
 var altitude = 0;
 
@@ -231,7 +231,9 @@ window.onload = function init() {
     gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
     gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
 
-    spawn_bacteria();
+    make_bacteria(0, 100, 3);
+    make_bacteria(5, 100, 6);
+    make_bacteria(0, 30, 1);
 
     render();
 };
@@ -254,7 +256,7 @@ function render(){
     for( var i=0; i<index; i+=3)
         gl.drawArrays( gl.TRIANGLES, i, 3 );
 
-    gl.drawArrays(gl.LINE_LOOP , index, 3);
+    gl.drawArrays(gl.TRIANGLE_STRIP, index, num_bacteria_points);
 
     window.requestAnimFrame(render);
 }
@@ -302,11 +304,71 @@ function Bacteria() {
     return vertices;
 }
 
+function make_bacteria_grid() {
+
+    console.log("Making bacteria grid.");
+
+    var vertices = [];
+
+    for(var i = 0; i < 10; i+=1) {
+        for(var j = 0; j < 10; j+=1) {
+            vertices.push(bacteria_point(i,j));
+            num_bacteria_points++;
+        }
+    }
+
+    console.log("Adding grid to buffer.");
+    gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(vertices));
+}
+
+
+// TODO pass start and end points on the grid to generate a bacteria that grows along the outside of the sphere
+function make_bacteria(start, end, row) {
+
+    console.log("Making bacteria grid.");
+
+    var vertices = [];
+
+    for(var j = start; j < end; j+=0.25) {
+        vertices.push(bacteria_point(row,j));
+        vertices.push(bacteria_point(row+1,j));
+        num_bacteria_points+=2;
+    }
+
+    console.log("Adding grid to buffer.");
+    gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(vertices));
+}
+
+
+
+function bacteria_point(altitude, azimuth) {
+    // Distance of points from the origin
+    // size = 1 corresponds to points arriving on the sphere itself, triangle will intersect
+    // Sized close to one will likely result in the plane of triangle clipping through sphere
+    var size = 1.045;
+
+    var vec = vec4(size * Math.sin(get_altitude(altitude)) * Math.cos(get_azimuth(azimuth)),
+        size * Math.sin(get_altitude(altitude)) * Math.sin(get_azimuth(azimuth)),
+        size * Math.cos(get_altitude(altitude)),
+        1);
+
+    console.log(vec);
+
+    return vec;
+}
+
 function plot_new_point() {
+    var vertices = [];
+
+    var size = 1.045;
+
+
+
     vertices.push(vec4(size * Math.sin(get_altitude(altitude+2)) * Math.cos(get_azimuth(2.5)),
         size * Math.sin(get_altitude(altitude+2)) * Math.sin(get_azimuth(2.5)),
         size * Math.cos(get_altitude(altitude+2)),
         1));
+
     console.log(vertices);
 }
 
