@@ -1,54 +1,24 @@
-//alert(print_r(your array));  //call it like this
-
-// Game wide constants
+// Canvas and glsl contexts
 var canvas;
 var gl;
-var radius = 0.5; //Defines circle width and bacteria distance from origin
-var cx = 0; // center sphere at origin
-var cy = 0; // center sphere at origin
-var cz = 0; // center sphere at origin
-var num_points = 35; // Number of points to make up the circle
 
-var bacteria_list = [];
-
-var num_bacteria_points = 0;
-var azimuth = 0;
-var altitude = 0;
-
-var gamma = Math.PI*1.6; // Up to 2 PI radians
-var epsilon = Math.PI*0.7; // Up to PI radians
-
-var score = 0; // Increase when a bacteria spends a tick at max length
-var hi_score = 0;
-
-var time = 5.000;
-var game_over = false;
-// Second boolean variable for control flow of menu and game
-var playing = false;
-
-
-
-// References to HTML views
-var gameoverView;
-var winView;
-var gameControl;
-var menuControl;
-var gameView;
-
-
-// Lighting and 3D related variables
-var numTimesToSubdivide = 6;
-
+// Arrays to hold sphere points and sphere normal vectors for lighting
+// Keep the indices for the vertex arrays so we can draw them in the order required to have triangles
+var sphere_normals = [];
+var sphere_points = [];
+var sphere_index = [];
 var index = 0;
-
-var pointsArray = [];
-var normalsArray = [];
-
-var radian = 0.3;
+var latitude = 50;
+var longitude = 50;
+var sphere_scalor = 1.32;
+var drag_force = 0.05;
+var velocity = 0;
+var acceleration = 1.2;
+var max_velocity = 4;
 
 var near = -10;
 var far = 10;
-var radius = 1.5;
+var radius = 1;
 var theta  = 0.0;
 var phi    = 0.0;
 var dr = 5.0 * Math.PI/180.0;
@@ -57,11 +27,6 @@ var left = -3.0;
 var right = 3.0;
 var ytop =3.0;
 var bottom = -3.0;
-
-var va = vec4(0.0, 0.0, -1.0,1);
-var vb = vec4(0.0, 0.942809, 0.333333, 1);
-var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
-var vd = vec4(0.816497, -0.471405, 0.333333,1);
 
 var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
@@ -73,98 +38,43 @@ var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
 var materialSpecular = vec4( 1.0, 0.8, 0.0, 1.0 );
 var materialShininess = 10.0;
 
-var ctm;
-var ambientColor, diffuseColor, specularColor;
-
-var modelViewMatrix, projectionMatrix;
-var modelViewMatrixLoc, projectionMatrixLoc;
+var modelViewMatrix, projectionMatrix, scalorMatrix, translationMatrix;
+var modelViewMatrixLoc, projectionMatrixLoc, scalorMatrixLoc, translationMatrixLoc;
 var eye;
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
 
-// FUNCTIONS FOR DRAWING THE SPHERE
-function triangle(a, b, c){
-
-    var t1 = subtract(b, a);
-    var t2 = subtract(c, a);
-    var normal = normalize(cross(t1, t2));
-    normal = vec4(normal);
-//above calculation puts a 1 in location[3], reset to 0
-// for vector (MB June30)
-    normal[3]=0;
-    normalsArray.push(normal);
-    normalsArray.push(normal);
-    normalsArray.push(normal);
-
-    pointsArray.push(a);
-    pointsArray.push(b);
-    pointsArray.push(c);
-
-    index += 3;
-}
+// GAME VARIABLES
+var bacteria_list = [];
+var bacteria_counter = 0;
+var score = 0;
+var hi_score = 0;
+var game_over = false;
 
 
-function divideTriangle(a, b, c, count) {
-    if ( count > 0 ) {
-
-        var ab = mix( a, b, 0.5);
-        var ac = mix( a, c, 0.5);
-        var bc = mix( b, c, 0.5);
-
-        ab = normalize(ab, true);
-        ac = normalize(ac, true);
-        bc = normalize(bc, true);
-
-        divideTriangle( a, ab, ac, count - 1 );
-        divideTriangle( ab, b, bc, count - 1 );
-        divideTriangle( bc, c, ac, count - 1 );
-        divideTriangle( ab, bc, ac, count - 1 );
-    }
-    else {
-        triangle( a, b, c );
-    }
-}
-
-
-//NOTE: Counter clockwise change (MB June 30)
-function tetrahedron(a, b, c, d, n) {
-    divideTriangle(c,b,a, n);
-    divideTriangle(b,c,d, n);
-    divideTriangle(b,d,a, n);
-    divideTriangle(d,c,a, n);
-}
-
+// Key event handler for changing variables and rotating the sphere
 window.onkeydown = function(e){
 
-
     var key = e.keyCode ? e.keyCode : e.which;
-
-    if(key == 38 && altitude < 7){
-        //up
-        console.log("Altitude keydown");
-        altitude += 1;
-        spawn_bacteria();
-    }
-    else if(key == 40 && altitude > 0){
-        //down
-        console.log("Altitude keydown");
-        altitude -= 1;
-        spawn_bacteria();
-    }
     if(key ==65 || key == 37){
-        //left
-        theta += dr;
+        // accelerate the sphere rotation left
+        if (velocity > -max_velocity) {
+            velocity -= acceleration;
+        }
+        //theta += 0.05 *velocity;
     }
     else if(key == 39 || key == 68){
-        //right
-        theta -= dr;
+        // accelerate the sphere rotation right
+        if (velocity < max_velocity) {
+            velocity += acceleration;
+        }
+        //theta -= 0.05 * velocity;
     }
 
 };
 
 window.onload = function init() {
-
     canvas = document.getElementById( "gl-canvas" );
 
     canvas.addEventListener('click', canvasClicked);
@@ -181,7 +91,6 @@ window.onload = function init() {
     //gameoverView.style.display = 'none';
     //winView.style.display = 'none';
 
-
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
@@ -196,44 +105,56 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-
+    // Establish lighting matrix products
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
     specularProduct = mult(lightSpecular, materialSpecular);
 
+    // Calculate a sphere, given the number of lines of latitude and longitude
+    calculate_sphere(latitude, longitude);
+    bacteria_list.push(Bacteria());
+    console.log("Number of bacteria: " + bacteria_list.length);
 
-    tetrahedron(va, vb, vc, vd, numTimesToSubdivide);
-
-    var nBuffer = gl.createBuffer();
+    // Buffer to hold the normal data for the sphere
+    nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
     gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.STATIC_DRAW );
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(normalsArray));
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(sphere_normals));
 
-    var vNormal = gl.getAttribLocation( program, "vNormal" );
-    gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vNormal);
-
-    var vBuffer = gl.createBuffer();
+    // Buffer to hold the vertex data for the sphere
+    vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.DYNAMIC_DRAW );
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(pointsArray));
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(sphere_points));
 
+    // Buffer to hold element array buffer data for the sphere's vertex order
+    iBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphere_index), gl.STATIC_DRAW);
+
+    // Establish vertex attributes for the point and normal array data
     var vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray(vNormal);
+
+    // Get the location of model view and projection matrices
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
+    scalorMatrixLoc = gl.getUniformLocation( program, "scalorMatrix");
+    translationMatrixLoc = gl.getUniformLocation( program, "translationMatrix");
 
+    // Establish the lighting uniforms with globally defined vertices above
     gl.uniform4fv( gl.getUniformLocation(program, "ambientProduct"),flatten(ambientProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "diffuseProduct"),flatten(diffuseProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "specularProduct"),flatten(specularProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
     gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
 
-    make_bacteria(0, 100, 3);
-    make_bacteria(5, 100, 6);
-    make_bacteria(0, 30, 1);
+    console.log(bacteria_list[0]);
 
     render();
 };
@@ -248,183 +169,199 @@ function render(){
 
     modelViewMatrix = lookAt(eye, at , up);
     projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+    translationMatrix = translate(0, 0, 0);
+    scalorMatrix = simple_scale(sphere_scalor);
 
+    // Update the shader data for program matrices
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
+    gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(translationMatrix));
+    gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(scalorMatrix));
 
-    // Render the sphere to the canvas
-    for( var i=0; i<index; i+=3)
-        gl.drawArrays( gl.TRIANGLES, i, 3 );
+    // Draw the main sphere
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+    gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, index, num_bacteria_points);
+    // Draw the bacteria
+    for( var i = 0; i < bacteria_list.length; i++) {
+        if (bacteria_list[i].alive == true) {
+            gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(simple_scale(bacteria_list[i].size))); // Set the uniform for scaling this bacteria
+            gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z))); // Set the uniform for translating this attribute
+            gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0); // Draw the sphere buffer with the appropriate scaling and translation to make it appear as bacteria
+        }
+    }
 
     window.requestAnimFrame(render);
 }
 
-function spawn_bacteria() {
-    console.log("spawn_bacteria");
-    if(game_over != true) {
+function calculate_sphere (latitude, longitude) {
+    for (var j=0; j <= latitude; j++) {
 
-        // ADD NEW BACTERIA TO THE SURFACE if the probability allow it
-        //if (Math.floor((Math.random() * 100) < spawn_chance)) {
-        // 1 - Create a new bacteria in JS
-        var bact = bacteria();
-        // 2 - Add the bacteria to an existing slot or add at the end of the buffer
-        gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(bact.points));
-        //}
+        // For each latitude point, calculate the longitude column data
+        var theta = j * Math.PI / latitude;
+        var sinTheta = Math.sin(theta);
+        var cosTheta = Math.cos(theta);
+
+        for (var i = 0; i <= longitude; i++) {
+
+            // Determine the order of the vertices during the render
+            var first = (j * (longitude + 1)) + i;
+            var second = first + longitude + 1;
+            sphere_index.push(first);
+            sphere_index.push(second);
+            sphere_index.push(first + 1);
+            sphere_index.push(second);
+            sphere_index.push(second + 1);
+            sphere_index.push(first + 1);
+            index += 6; // Number of points added to the index each loop
+
+            // For each longitude value calculate the vertex normals for lighting and points for drawing
+            var phi = i * 2 * Math.PI / longitude;
+            var sinPhi = Math.sin(phi);
+            var cosPhi = Math.cos(phi);
+
+            // Calculate x, y, and z in terms of coordinates on the sphere surface
+            var x = cosPhi * sinTheta;
+            var y = cosTheta;
+            var z = sinPhi * sinTheta;
+
+            // Sphere normal vectors are saved to be used for lighting calculations
+            sphere_normals.push(vec4(x, y, z, 1));
+
+            // Sphere points are saved to be loaded into the buffer and used for drawing
+            sphere_points.push(vec4(radius * x, radius * y, radius * z, 1));
+
+        }
     }
 }
 
-// Creates the points for a new bacteria
+function canvasClicked(event) {
+    //gets coordinates of click
+    console.log("Canvas clicked");
+    var rect = canvas.getBoundingClientRect();
+    var x = event.clientX - rect.left;
+    var y = event.clientY - rect.top;
+
+    // Move the canvas coordinates in range of the clipping region (-1 to 1)
+    x =((x * 2/canvas.width)  -1);
+    y =-1*((y * 2/canvas.height) -1);
+
+    console.log("Y: " + y);
+    console.log("X: " + x);
+}
+
+
+// Create a scalor vector
+function scale(sx, sy, sz) {
+    return [
+        sx, 0,  0,  0,
+        0, sy,  0,  0,
+        0,  0, sz,  0,
+        0,  0,  0,  1
+    ];
+}
+
+// Create a scalor vector
+function simple_scale(s) {
+    return [
+        s, 0,  0,  0,
+        0, s,  0,  0,
+        0,  0, s,  0,
+        0,  0,  0,  1
+    ];
+}
+
+// Create a translation vector
+function translate (tx, ty, tz) {
+    return [
+        1,  0,  0,  0,
+        0,  1,  0,  0,
+        0,  0,  1,  0,
+        tx, ty, tz, 1
+    ];
+}
+
+// GAME METHODS
+
+// Game timers
+setInterval(grow_bacteria, 100);
+setInterval(spawn_bacteria, 5000);
+setInterval(exert_drag, 32);
+
+// Holds information about a single bacteria
 function Bacteria() {
-    console.log("Bacteria");
-    var vertices = [];
 
-    // Distance of points from the origin
-    // size = 1 corresponds to points arriving on the sphere itself, triangle will intersect
-    // Sized close to one will likely result in the plane of triangle clipping through sphere
-    var size = 1.045;
-    console.log(size);
-
-    vertices.push(vec4(size * Math.sin(get_altitude(altitude+1.1)) * Math.cos(get_azimuth(2.5)),
-                        size * Math.sin(get_altitude(altitude+1.1)) * Math.sin(get_azimuth(2.5)),
-                        size * Math.cos(get_altitude(altitude+1.1)),
-                        1));
-
-    vertices.push(vec4(size * Math.sin(get_altitude(altitude+1.4)) * Math.cos(get_azimuth(2.5)),
-                        size * Math.sin(get_altitude(altitude+1.4)) * Math.sin(get_azimuth(2.5)),
-                        size * Math.cos(get_altitude(altitude+1.4)),
-                        1));
-
-    vertices.push(vec4(size * Math.sin(get_altitude(altitude+2)) * Math.cos(get_azimuth(2.5)),
-                        size * Math.sin(get_altitude(altitude+2)) * Math.sin(get_azimuth(2.5)),
-                        size * Math.cos(get_altitude(altitude+2)),
-                        1));
-    console.log(vertices);
-    return vertices;
-}
-
-function make_bacteria_grid() {
-
-    console.log("Making bacteria grid.");
-
-    var vertices = [];
-
-    for(var i = 0; i < 10; i+=1) {
-        for(var j = 0; j < 10; j+=1) {
-            vertices.push(bacteria_point(i,j));
-            num_bacteria_points++;
-        }
-    }
-
-    console.log("Adding grid to buffer.");
-    gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(vertices));
-}
-
-
-// TODO pass start and end points on the grid to generate a bacteria that grows along the outside of the sphere
-function make_bacteria(start, end, row) {
-
-    console.log("Making bacteria grid.");
-
-    var vertices = [];
-
-    for(var j = start; j < end; j+=0.25) {
-        vertices.push(bacteria_point(row,j));
-        vertices.push(bacteria_point(row+1,j));
-        num_bacteria_points+=2;
-    }
-
-    console.log("Adding grid to buffer.");
-    gl.bufferSubData(gl.ARRAY_BUFFER, index*8*2, flatten(vertices));
-}
-
-
-
-function bacteria_point(altitude, azimuth) {
-    // Distance of points from the origin
-    // size = 1 corresponds to points arriving on the sphere itself, triangle will intersect
-    // Sized close to one will likely result in the plane of triangle clipping through sphere
-    var size = 1.045;
-
-    var vec = vec4(size * Math.sin(get_altitude(altitude)) * Math.cos(get_azimuth(azimuth)),
-        size * Math.sin(get_altitude(altitude)) * Math.sin(get_azimuth(azimuth)),
-        size * Math.cos(get_altitude(altitude)),
-        1);
-
-    console.log(vec);
-
-    return vec;
-}
-
-function plot_new_point() {
-    var vertices = [];
-
-    var size = 1.045;
-
-
-
-    vertices.push(vec4(size * Math.sin(get_altitude(altitude+2)) * Math.cos(get_azimuth(2.5)),
-        size * Math.sin(get_altitude(altitude+2)) * Math.sin(get_azimuth(2.5)),
-        size * Math.cos(get_altitude(altitude+2)),
-        1));
-
-    console.log(vertices);
-}
-
-
-// Move the value into the range (0-1)*Pi Radians for azimuth
-// Azimuth determines the latitude of the points along the sphere
-var get_altitude = function(value) {
-    return (value * Math.PI)/10
-};
-
-// Move the value into the range of (0-2)*Pi Radians for azimuth
-// Azimuth determines the longitude of the point along the sphere
-var get_azimuth = function(value) {
-    return (value * 2*Math.PI)/10;
-};
-
-// Function for the bacteria to draw over the sphere
-function bacteria(){
     var b = {};
-    b.points = Bacteria();
-    b.color = Math.floor( Math.random() * 4); console.log(b.color);
-    b.alive = true; // Flip this flag to mark for overwrite when inserting new bacteria so we can reuse buffer space
+    var i = Math.floor((Math.random() * latitude));
+    var j = Math.floor((Math.random() * latitude));
+    var origin_distance = radius*sphere_scalor + 0.4;
 
-    // TODO keep and rework into 3 dimensions
+    b.x = origin_distance * Math.cos(i * 2 * Math.PI / longitude) *  Math.sin(j * Math.PI / latitude);
+    b.y = origin_distance * Math.cos(j * Math.PI / latitude);
+    b.z = origin_distance * Math.sin(i * 2 * Math.PI / longitude) * Math.sin(j * Math.PI / latitude);
+
+    b.color = Math.floor( Math.random() * 4);
+    b.alive = true;
+    b.size = 0.5;
+    b.order = bacteria_counter; bacteria_counter++;
+
     b.grow = function() { // Add another 'unit' to the bacteria
-        var center = points[0]; // First point of bacteria represents center point
-        // Once bacteria reaches its max size, stop growing it and subtract points from the player on growth
-        // Distance between the center and one of the outer points is used to determine the size
-        if ( Math.sqrt(
-                Math.pow(points[1].x - center.x),2) +
-            Math.pow((points[1].x - center.x),2) +
-            Math.pow((points[1].z - center.z),2)
-        ) {
-            update_score(-1);
+
+        if (b.size < 0.5 + 0.1) {
+            b.size += 0.0005;
         }else{
-            for(var i = 0; i < points.length; i++) {
-                // Move each point along the vector between the center and the point itself
-                points[i].x += (points[i].x - center.x) * 1.10;
-                points[i].y += (points[i].y - center.y) * 1.10;
-                points[i].z += (points[i].z = center.z) * 1.10;
-            }
+            decrease_score();
         }
-        // TODO update the points inside the buffer to reflect the new bacteria points in the program
     };
-    b.die = function() {
+
+    b.kill = function() {
         b.alive = false;
-        //active_bacteria--;
+        increase_score();
     };
-    //active_bacteria++;
+
     return b;
 }
 
+function decrease_score() {
+    score--;
+    if (score == 0) {
+        game_over = true;
+    }
+}
+
+function increase_score() {
+    score += 5;
+    if (score >= hi_score) {
+        hi_score = score;
+    }
+}
+
+function grow_bacteria() {
+    for (var i = 0; i< bacteria_list.length; i++) {
+        bacteria_list[i].grow();
+    }
+}
+
+function spawn_bacteria() {
+    bacteria_list.push(Bacteria());
+}
+
+function exert_drag() {
+    if (velocity > 0) {
+        velocity -= drag_force;
+    }else if(velocity < 0) {
+        velocity += drag_force;
+    }
+
+    if (velocity > -0.01 && velocity < 0.01) {
+        velocity =0;
+    }
+
+    theta -= 0.01 * velocity;
+}
 
 
 // Top Level Game Control Functions moved over from Project 1
-
 function startPressed(){
     launch();
     menuControl.style.display = 'none';
@@ -532,23 +469,3 @@ function countdown(){
     }
 
 }
-
-function canvasClicked(event) {
-    //gets coordinates of click
-    console.log("Canvas clicked");
-    var rect = canvas.getBoundingClientRect();
-    var x = event.clientX - rect.left;
-    var y = event.clientY - rect.top;
-
-    // Move the canvas coordinates in range of the clipping region (-1 to 1)
-    x =((x * 2/canvas.width)  -1);
-    y =-1*((y * 2/canvas.height) -1);
-
-    console.log("Y: " + y);
-    console.log("X: " + x);
-}
-
-
-
-
-
