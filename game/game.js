@@ -207,13 +207,12 @@ function render(){
     // Draw the main sphere
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
     gl.uniform4fv(colorMatrixLoc, sphere_color);
-    gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
+    // gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
 
 
     // Draw the bacteria
     for( var i = 0; i < bacteria_list.length; i++) {
         if (bacteria_list[i].alive == true) {
-            console.log(bacteria_colors[bacteria_list[i].color]);
             gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(simple_scale(bacteria_list[i].size))); // Set the uniform for scaling this bacteria
             gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z))); // Set the uniform for translating this attribute
             gl.uniform4fv(colorMatrixLoc, bacteria_colors[bacteria_list[i].color]);
@@ -225,23 +224,7 @@ function render(){
 
 }
 
-// Find out where the center of the sphere is moved to in the matrix and
-// Generate a matrix that can be used to recreate that position in javascript
-// So collision can take place
-function collision_matrix() {
 
-    var eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
-        radius*Math.sin(theta)*Math.sin(phi), radius*Math.cos(theta));
-
-    // Generate the model view matrix
-    var modelView = lookAt(eye, at , up);
-
-    // Generate the projection matrix
-    var projection = ortho(left, right, bottom, ytop, near, far);
-
-    // Multiply the two together to get the collision matrix we can use for transform
-    return mult(modelView, projection);
-}
 
 function calculate_sphere (latitude, longitude) {
     for (var j=0; j <= latitude; j++) {
@@ -526,9 +509,22 @@ function countdown(){
 // TODO: add some sort of merge action to the bacteria
 function bacteria_collision_check () {
     for (var i = 0; i < bacteria_list.length; i++) {
-        for (var j = i+1; j < bacteria_list.length; j++) {
-            if (bacteria_collision(bacteria_list[i], bacteria_list[j])) {
-                //console.log("Bacteria " + i + " collides with " + j + ".");
+        if(bacteria_list[i].alive == true){
+            for (var j = i+1; j < bacteria_list.length; j++) {
+                if (bacteria_collision(bacteria_list[i], bacteria_list[j])) {
+                    //console.log("Bacteria " + i + " collides with " + j + ".");
+                    if(bacteria_list[i].order > bacteria_list[j].order){
+                        console.log("Merging i: " + i + " j: " + j);
+                        bacteria_list[i].color = bacteria_list[j].color;
+                        bacteria_list[i].order = bacteria_list[j].order;
+                    }
+                    else{
+                        console.log("Merging j: " + j + " i: " + i);
+                        bacteria_list[j].color = bacteria_list[i].color;
+                        bacteria_list[j].order = bacteria_list[i].order;
+
+                    }
+                }
             }
         }
     }
@@ -563,32 +559,33 @@ function point_bacteria_collision(point, bact, size) {
 // The z point for the mouse is given by the each bacteria's z coordinate
 function mouse_collision_check(mouse) {
 
-    var c_matrix = collision_matrix();
-    console.log("C matrix:");
-    console.log(c_matrix);
+    var matrix = mult(modelview_matrix(), projection_matrix());
 
-    var temp_point;
+    var trans_matrix;
+    var temp_matrix;
     var collision_point;
 
     console.log("Mouse collision check.");
     for(var i = 0; i < bacteria_list.length; i++) {
 
-        temp_point = vec4(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z, 1);
-        console.log("Temp point:");
-        console.log(temp_point);
-
+        temp_matrix = translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z);
+        temp_matrix.matrix = true;
         // Apply the collision matrix transformation to the point stored in the bacteria
-        collision_point = vector_mult(c_matrix, temp_point);
+        trans_matrix = mult(matrix, temp_matrix);
 
-        console.log("Collision point:");
-        console.log(collision_point);
+        collision_point = vector_mult(trans_matrix, vec4(0, 0, 0, 1));
 
-        var hit = point_bacteria_collision({x: mouse.x, y: mouse.y, z: collision_point.z}, collision_point, bacteria_list[i].size);
+        var mouse_map = {x: mouse.x, y: mouse.y, z: collision_point.z};
+        console.log("Mouse map:");
+        console.log(mouse_map);
+
+        var hit = point_bacteria_collision(mouse_map, collision_point, bacteria_list[i].size);
 
         // TODO: take the bacteria merger into account
         if (hit == true) {
             console.log("Mouse collides with bacteria " + i);
             bacteria_list[i].kill();
+            hit = false;
         }
     }
 }
@@ -596,12 +593,26 @@ function mouse_collision_check(mouse) {
 // Adapted MV mult method to take a vector as the second argument
 function vector_mult( m, v )
 {
-
-    if ( m.length != v.length ) {
-        throw "mult(): vectors are not the same dimension";
-    }
-
-    return {x : m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
+    var m ={x : m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
             y : m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3],
-            z : m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3]};
+            z : m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3],
+            w : m[3][0] * v[0] + m[3][1] * v[1] + m[3][2] * v[2] + m[3][3] * v[3]};
+    return mat4(m.x, m.y, m.z, m.w);
+}
+
+// Find out where the center of the sphere is moved to in the matrix and
+// Generate a matrix that can be used to recreate that position in javascript
+// So collision can take place
+function modelview_matrix() {
+
+    var eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
+        radius*Math.sin(theta)*Math.sin(phi), radius*Math.cos(theta));
+
+    // Generate the model view matrix
+    return lookAt(eye, at , up);
+}
+
+function projection_matrix() {
+    // Generate the projection matrix
+    return ortho(left, right, bottom, ytop, near, far);
 }

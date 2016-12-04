@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="019359fc-0134-4208-864a-41623e8ad484" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/game.html" afterPath="$PROJECT_DIR$/game/game.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game/game.js" afterPath="$PROJECT_DIR$/game/game.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="game.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game/game.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="301">
-              <caret line="88" column="35" lean-forward="false" selection-start-line="88" selection-start-column="35" selection-end-line="88" selection-end-column="35" />
+            <state relative-caret-position="1245">
+              <caret line="102" column="13" lean-forward="true" selection-start-line="102" selection-start-column="13" selection-end-line="102" selection-end-column="13" />
               <folding>
                 <element signature="n#style#0;n#canvas#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -40,8 +39,8 @@
       <file leaf-file-name="game.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/game/game.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="125" column="29" lean-forward="true" selection-start-line="125" selection-start-column="29" selection-end-line="125" selection-end-column="29" />
+            <state relative-caret-position="2797">
+              <caret line="573" column="49" lean-forward="true" selection-start-line="573" selection-start-column="49" selection-end-line="573" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -66,11 +65,12 @@
       <find>startpressed</find>
       <find>launch</find>
       <find>game-control</find>
-      <find>render</find>
-      <find>bacteria</find>
       <find>colorMatrixLoc</find>
       <find>sphere_color</find>
       <find>sphere</find>
+      <find>bacteria</find>
+      <find>merge</find>
+      <find>render</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -91,7 +91,7 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="23" />
+    <option name="y" value="24" />
     <option name="width" value="1680" />
     <option name="height" value="971" />
   </component>
@@ -256,15 +256,23 @@
       <updated>1480811870202</updated>
       <workItem from="1480811871912" duration="247000" />
       <workItem from="1480812261550" duration="3630000" />
-      <workItem from="1480818945344" duration="2579000" />
+      <workItem from="1480818945344" duration="6811000" />
     </task>
+    <task id="LOCAL-00001" summary="Added colors to the bacteria and sphere">
+      <created>1480821782100</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1480821782100</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6456000" />
+    <option name="totallyTimeSpent" value="10688000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="971" extended-state="6" />
+    <frame x="0" y="24" width="1680" height="971" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.10654762" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -290,6 +298,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added colors to the bacteria and sphere" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added colors to the bacteria and sphere" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -376,8 +388,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/game/game.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="301">
-          <caret line="88" column="35" lean-forward="false" selection-start-line="88" selection-start-column="35" selection-end-line="88" selection-end-column="35" />
+        <state relative-caret-position="1245">
+          <caret line="102" column="13" lean-forward="true" selection-start-line="102" selection-start-column="13" selection-end-line="102" selection-end-column="13" />
           <folding>
             <element signature="n#style#0;n#canvas#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
           </folding>
@@ -386,8 +398,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/game/game.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="125" column="29" lean-forward="true" selection-start-line="125" selection-start-column="29" selection-end-line="125" selection-end-column="29" />
+        <state relative-caret-position="2797">
+          <caret line="573" column="49" lean-forward="true" selection-start-line="573" selection-start-column="49" selection-end-line="573" selection-end-column="49" />
           <folding />
         </state>
       </provider>
