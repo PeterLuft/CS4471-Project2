@@ -73,6 +73,7 @@ main()
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
 <script type="text/javascript" src="game.js"></script>
+<link rel="stylesheet" href="../css/index.css">
 
 <body>
 
@@ -80,7 +81,7 @@ main()
     <h1>
         Bacteria III: Making America Great Again
     </h1>
-    <input type="button" value="START" onclick="startPressed()"
+    <input type="button" value="START" onclick="startPressed()">
 </div>
 
 <div id="game-view">
@@ -88,8 +89,8 @@ main()
     <div id="hi_score_div">HI-SCORE  <span id="hi_score_value" >0</span></div>
     <div id="timer"><span id="time_value">0</span> SECONDS</div>
 
-    <canvas id="gl-canvas" width="512" height="512">
-        Whoops
+    <canvas id="gl-canvas" width="512" height="512" style="border: 2px solid white;">
+        Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
 
     <div id="game-control">
