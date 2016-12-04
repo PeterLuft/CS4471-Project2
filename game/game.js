@@ -527,18 +527,16 @@ function bacteria_collision(bact1, bact2) {
 
 // Takes a point in clip space and a sphere and sees if they intersect
 // TODO: apply matrix transformation to the bacteria point before detection
-function point_bacteria_collision(point, bact) {
-    console.log(point);
-    console.log(bact);
+function point_bacteria_collision(point, bact, size) {
 
     var distance = Math.sqrt(Math.pow(point.x - bact.x, 2) +
                             Math.pow(point.y - bact.y, 2) +
                             Math.pow(point.z - bact.z, 2));
 
     console.log("distance: " + distance);
-    console.log("size: " + bact.size);
+    console.log("size: " + size);
 
-    return distance < bact.size;
+    return distance < size;
 }
 
 // Takes mouse (x,y) and checks the mouse against each bacteria for intersection.
@@ -565,7 +563,7 @@ function mouse_collision_check(mouse) {
         console.log("Collision point:");
         console.log(collision_point);
 
-        var hit = point_bacteria_collision({x: mouse.x, y: mouse.y, z: bacteria_list[i].z}, collision_point);
+        var hit = point_bacteria_collision({x: mouse.x, y: mouse.y, z: collision_point.z}, collision_point, bacteria_list[i].size);
 
         // TODO: take the bacteria merger into account
         if (hit == true) {
@@ -578,16 +576,12 @@ function mouse_collision_check(mouse) {
 // Adapted MV mult method to take a vector as the second argument
 function vector_mult( m, v )
 {
-    var result = {};
 
     if ( m.length != v.length ) {
         throw "mult(): vectors are not the same dimension";
     }
 
-
-    result.x = ( m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3] );
-    result.y = ( m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3] );
-    result.z = ( m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3] );
-
-    return result;
+    return {x : m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
+            y : m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3],
+            z : m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3]};
 }
