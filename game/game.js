@@ -194,6 +194,24 @@ function render(){
     window.requestAnimFrame(render);
 }
 
+// Find out where the center of the sphere is moved to in the matrix and
+// Generate a matrix that can be used to recreate that position in javascript
+// So collision can take place
+function collision_matrix() {
+
+    var eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
+        radius*Math.sin(theta)*Math.sin(phi), radius*Math.cos(theta));
+
+    // Generate the model view matrix
+    var modelView = lookAt(eye, at , up);
+
+    // Generate the projection matrix
+    var projection = ortho(left, right, bottom, ytop, near, far);
+
+    // Multiply the two together to get the collision matrix we can use for transform
+    return mult(modelView, projection);
+}
+
 function calculate_sphere (latitude, longitude) {
     for (var j=0; j <= latitude; j++) {
 
@@ -226,7 +244,7 @@ function calculate_sphere (latitude, longitude) {
             var z = sinPhi * sinTheta;
 
             // Sphere normal vectors are saved to be used for lighting calculations
-            sphere_normals.push(vec4(x, y, z, 1));
+            sphere_normals.push(vec4(x, y, z, 0));
 
             // Sphere points are saved to be loaded into the buffer and used for drawing
             sphere_points.push(vec4(radius * x, radius * y, radius * z, 1));
@@ -248,6 +266,8 @@ function canvasClicked(event) {
 
     console.log("Y: " + y);
     console.log("X: " + x);
+
+    mouse_collision_check({x: x, y: y});
 }
 
 
@@ -287,6 +307,7 @@ function translate (tx, ty, tz) {
 setInterval(grow_bacteria, 100);
 setInterval(spawn_bacteria, 5000);
 setInterval(exert_drag, 32);
+setInterval(bacteria_collision_check, 1000);
 
 // Holds information about a single bacteria
 function Bacteria() {
@@ -464,8 +485,96 @@ function countdown(){
         //TODO player reached the time limit. Stop spawning more bacteria
         time = 0;
         document.getElementById("time_value").innerHTML = time;
-
-
     }
 
+}
+
+// TODO: seems to work, ensure that the size of the bacteria correspond 1-1 with its radius
+// TODO: add some sort of merge action to the bacteria
+function bacteria_collision_check () {
+    for (var i = 0; i < bacteria_list.length; i++) {
+        for (var j = i+1; j < bacteria_list.length; j++) {
+            if (bacteria_collision(bacteria_list[i], bacteria_list[j])) {
+                //console.log("Bacteria " + i + " collides with " + j + ".");
+            }
+        }
+    }
+}
+
+// Returns boolean indicating of two bacteria overlap
+// Calculates the distance between the centers of both bacteria, then checks if the sum of radius'
+// are greater than the distance
+function bacteria_collision(bact1, bact2) {
+    var distance = Math.sqrt(Math.pow((bact1.x - bact2.x), 2) +
+                            Math.pow((bact1.y - bact2.y),2 ) +
+                            Math.pow((bact1.z - bact2.z), 2));
+    return distance < (bact1.size + bact2.size);
+}
+
+
+// Takes a point in clip space and a sphere and sees if they intersect
+// TODO: apply matrix transformation to the bacteria point before detection
+function point_bacteria_collision(point, bact) {
+    console.log(point);
+    console.log(bact);
+
+    var distance = Math.sqrt(Math.pow(point.x - bact.x, 2) +
+                            Math.pow(point.y - bact.y, 2) +
+                            Math.pow(point.z - bact.z, 2));
+
+    console.log("distance: " + distance);
+    console.log("size: " + bact.size);
+
+    return distance < bact.size;
+}
+
+// Takes mouse (x,y) and checks the mouse against each bacteria for intersection.
+// The z point for the mouse is given by the each bacteria's z coordinate
+function mouse_collision_check(mouse) {
+
+    var c_matrix = collision_matrix();
+    console.log("C matrix:");
+    console.log(c_matrix);
+
+    var temp_point;
+    var collision_point;
+
+    console.log("Mouse collision check.");
+    for(var i = 0; i < bacteria_list.length; i++) {
+
+        temp_point = vec4(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z, 1);
+        console.log("Temp point:");
+        console.log(temp_point);
+
+        // Apply the collision matrix transformation to the point stored in the bacteria
+        collision_point = vector_mult(c_matrix, temp_point);
+
+        console.log("Collision point:");
+        console.log(collision_point);
+
+        var hit = point_bacteria_collision({x: mouse.x, y: mouse.y, z: bacteria_list[i].z}, collision_point);
+
+        // TODO: take the bacteria merger into account
+        if (hit == true) {
+            console.log("Mouse collides with bacteria " + i);
+            bacteria_list[i].kill();
+        }
+    }
+}
+
+// Adapted MV mult method to take a vector as the second argument
+function vector_mult( m, v )
+{
+    var result = {};
+
+    if ( m.length != v.length ) {
+        throw "mult(): vectors are not the same dimension";
+    }
+
+
+    result.x = ( m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3] );
+    result.y = ( m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3] );
+    result.z = ( m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3] );
+
+    return result;
 }
