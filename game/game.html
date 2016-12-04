@@ -12,6 +12,7 @@ uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec4 lightPosition;
+uniform vec4 vColor;
 uniform float shininess;
 
 uniform mat4 translationMatrix;
@@ -49,7 +50,7 @@ main()
 
     gl_Position = projectionMatrix * modelViewMatrix * scalorMatrix * translationMatrix * vPosition;
 
-    fColor = ambient + diffuse + specular;
+    fColor = ambient + diffuse + specular + vColor;
 
     fColor.a = 1.0;
 }

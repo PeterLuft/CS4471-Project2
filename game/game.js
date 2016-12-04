@@ -40,6 +40,8 @@ var materialShininess = 10.0;
 
 var modelViewMatrix, projectionMatrix, scalorMatrix, translationMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc, scalorMatrixLoc, translationMatrixLoc;
+var colorMatrixLoc;
+var sphereColorMatrixLoc;
 var eye;
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
@@ -52,6 +54,8 @@ var score = 0;
 var hi_score = 0;
 var game_over = false;
 var playing = false;
+var bacteria_colors;
+var sphere_color;
 
 // References to HTML views
 var gameoverView;
@@ -108,6 +112,17 @@ window.onload = function init() {
     gl.viewport( 0, 0, canvas.width, canvas.height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
+    // set the colors bacteria could be
+    bacteria_colors = [
+        [150.0/255, 34.0/255, 53.0/255,  1.0],    // Red
+        [50.0/255, 62.0/255, 135.0/255,  1.0],    // Blue
+        [211.0/255, 50.0/255, 184.0/255,  1.0],    // Pink
+        [160.0/255, 102.0/255, 173.0/255,  1.0],    // Purple
+        [33.0/255, 178.0/255, 171.0/255, 1.0]   // Marine
+    ];
+
+    sphere_color = [65.0/255, 105.0/255, 225.0/255, 1.0];  // Yellow
+
     gl.enable(gl.DEPTH_TEST);
 
     //
@@ -157,6 +172,7 @@ window.onload = function init() {
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
     scalorMatrixLoc = gl.getUniformLocation( program, "scalorMatrix");
     translationMatrixLoc = gl.getUniformLocation( program, "translationMatrix");
+    colorMatrixLoc = gl.getUniformLocation( program, "vColor");
 
     // Establish the lighting uniforms with globally defined vertices above
     gl.uniform4fv( gl.getUniformLocation(program, "ambientProduct"),flatten(ambientProduct) );
@@ -190,13 +206,17 @@ function render(){
 
     // Draw the main sphere
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+    gl.uniform4fv(colorMatrixLoc, sphere_color);
     gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
+
 
     // Draw the bacteria
     for( var i = 0; i < bacteria_list.length; i++) {
         if (bacteria_list[i].alive == true) {
+            console.log(bacteria_colors[bacteria_list[i].color]);
             gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(simple_scale(bacteria_list[i].size))); // Set the uniform for scaling this bacteria
             gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z))); // Set the uniform for translating this attribute
+            gl.uniform4fv(colorMatrixLoc, bacteria_colors[bacteria_list[i].color]);
             gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0); // Draw the sphere buffer with the appropriate scaling and translation to make it appear as bacteria
         }
     }
