@@ -51,7 +51,18 @@ var bacteria_counter = 0;
 var score = 0;
 var hi_score = 0;
 var game_over = false;
+var playing = false;
 
+// References to HTML views
+var gameoverView;
+var winView;
+var gameControl;
+var menuControl;
+var gameView;
+
+var buffer_id;
+var vertex_color_buffer;
+var vertex_color_attribute;
 
 // Key event handler for changing variables and rotating the sphere
 window.onkeydown = function(e){
@@ -80,18 +91,18 @@ window.onload = function init() {
     canvas.addEventListener('click', canvasClicked);
 
     // Setting up HTML references
-    //menuControl = document.getElementsByClassName("menu-control")[0];
-    //gameControl = document.getElementById("game-control");
-    //gameoverView = document.getElementById("gameover-view");
-    //winView = document.getElementById("win-view");
-    //gameView = document.getElementById("game-view");
-    //
-    //gameControl.style.display = 'none';
-    //gameView.style.display = 'none';
-    //gameoverView.style.display = 'none';
-    //winView.style.display = 'none';
+    menuControl = document.getElementsByClassName("menu-control")[0];
+    gameControl = document.getElementById("game-control");
+    gameoverView = document.getElementById("gameover-view");
+    winView = document.getElementById("win-view");
+    gameView = document.getElementById("game-view");
 
-    gl = WebGLUtils.setupWebGL( canvas );
+    gameControl.style.display = 'none';
+    gameView.style.display = 'none';
+    gameoverView.style.display = 'none';
+    winView.style.display = 'none';
+
+    gl = WebGLUtils.setupWebGL(canvas);
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
@@ -156,12 +167,11 @@ window.onload = function init() {
 
     console.log(bacteria_list[0]);
 
-    render();
+    //render();
 };
 
 // Render shapes to the screen
 function render(){
-
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
@@ -192,6 +202,7 @@ function render(){
     }
 
     window.requestAnimFrame(render);
+
 }
 
 function calculate_sphere (latitude, longitude) {
@@ -412,6 +423,8 @@ function launch(){
     document.getElementById("time_value").innerHTML = 30;
 
     //TODO Initialize the timed game elements
+
+    render();
 
 }
 
