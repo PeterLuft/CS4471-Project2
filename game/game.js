@@ -1,6 +1,7 @@
 // Canvas and glsl contexts
 var canvas;
 var gl;
+var program;
 
 // Arrays to hold sphere points and sphere normal vectors for lighting
 // Keep the indices for the vertex arrays so we can draw them in the order required to have triangles
@@ -66,6 +67,7 @@ var winView;
 var gameControl;
 var menuControl;
 var gameView;
+var lightingEnabled = true;
 
 var buffer_id;
 var vertex_color_buffer;
@@ -130,7 +132,7 @@ window.onload = function init() {
     //
     //  Load shaders and initialize attribute buffers
     //
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
     // Establish lighting matrix products
@@ -182,6 +184,7 @@ window.onload = function init() {
     gl.uniform4fv( gl.getUniformLocation(program, "diffuseProduct"),flatten(diffuseProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "specularProduct"),flatten(specularProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
+    gl.uniform1f (gl.getUniformLocation(program, "lightingEnabled"), lightingEnabled ? 1.0 : 0.0);
     gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
 
     console.log(bacteria_list[0]);
@@ -191,6 +194,7 @@ window.onload = function init() {
 
 // Render shapes to the screen
 function render(){
+
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
@@ -208,10 +212,8 @@ function render(){
     gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(scalorMatrix));
 
     // Draw the main sphere
-
     gl.uniform4fv(colorMatrixLoc, sphere_color);
     gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
-
 
     // Draw the bacteria
     for( var i = 0; i < bacteria_list.length; i++) {
@@ -222,9 +224,7 @@ function render(){
             gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0); // Draw the sphere buffer with the appropriate scaling and translation to make it appear as bacteria
         }
     }
-
     window.requestAnimFrame(render);
-
 }
 
 
@@ -632,4 +632,13 @@ function modelview_matrix() {
 function projection_matrix() {
     // Generate the projection matrix
     return ortho(left, right, bottom, ytop, near, far);
+}
+
+function toggleLighting() {
+    if (lightingEnabled == true) {
+        lightingEnabled = false;
+    }else{
+        lightingEnabled = true
+    }
+    gl.uniform1f(gl.getUniformLocation(program, "lightingEnabled"), lightingEnabled ? 1.0 : 0.0);
 }
