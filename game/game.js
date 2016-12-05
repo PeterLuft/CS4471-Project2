@@ -8,9 +8,9 @@ var sphere_normals = [];
 var sphere_points = [];
 var sphere_index = [];
 var index = 0;
-var latitude = 50;
-var longitude = 50;
-var sphere_scalor = 1.32;
+var latitude = 60;
+var longitude = 60;
+var sphere_scalor = 1.72;
 var drag_force = 0.05;
 var velocity = 0;
 var acceleration = 1.2;
@@ -20,15 +20,14 @@ var near = -10;
 var far = 10;
 var radius = 1;
 var theta  = 0.0;
-var phi    = 0.0;
-var dr = 5.0 * Math.PI/180.0;
+var phi = 0.0;
 
 var left = -3.0;
 var right = 3.0;
-var ytop =3.0;
+var ytop = 3.0;
 var bottom = -3.0;
 
-var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+var lightPosition = vec4(1.0, 1.0, 1.2, 0.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
 var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
@@ -41,10 +40,10 @@ var materialShininess = 10.0;
 var modelViewMatrix, projectionMatrix, scalorMatrix, translationMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc, scalorMatrixLoc, translationMatrixLoc;
 var colorMatrixLoc;
-var sphereColorMatrixLoc;
 var eye;
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
+var oscillator = 0;
 
 
 // GAME VARIABLES
@@ -56,6 +55,10 @@ var game_over = false;
 var playing = false;
 var bacteria_colors;
 var sphere_color;
+
+var bacteria_default_size = 0.3;
+var bacteria_protrusion = 2.8;
+var bacteria_collision_scale = sphere_scalor + bacteria_protrusion/right;
 
 // References to HTML views
 var gameoverView;
@@ -86,7 +89,6 @@ window.onkeydown = function(e){
         }
         //theta -= 0.05 * velocity;
     }
-
 };
 
 window.onload = function init() {
@@ -114,14 +116,14 @@ window.onload = function init() {
 
     // set the colors bacteria could be
     bacteria_colors = [
-        [150.0/255, 34.0/255, 53.0/255,  1.0],    // Red
+        [1.00, 0.42, 0.84, 1],    // Pink
         [50.0/255, 62.0/255, 135.0/255,  1.0],    // Blue
-        [211.0/255, 50.0/255, 184.0/255,  1.0],    // Pink
-        [160.0/255, 102.0/255, 173.0/255,  1.0],    // Purple
+        [113/255, 224/255, 150/255, 1.0],    // Green
+        [138/255, 50/255, 197/255, 1.0],    // Yellow
         [33.0/255, 178.0/255, 171.0/255, 1.0]   // Marine
     ];
 
-    sphere_color = [65.0/255, 105.0/255, 225.0/255, 1.0];  // Yellow
+    sphere_color = [0.0/255, 59/255, 155.0/255, 1.0];  // Yellow
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -144,19 +146,20 @@ window.onload = function init() {
     // Buffer to hold the normal data for the sphere
     nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.STATIC_DRAW );
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(sphere_normals));
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(sphere_normals), gl.STATIC_DRAW );
+    //gl.bufferSubData(gl.ARRAY_BUFFER, 0, );
 
     // Buffer to hold the vertex data for the sphere
     vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, 64*1024*1024, gl.DYNAMIC_DRAW );
+    gl.bufferData( gl.ARRAY_BUFFER, 8*1024*1024, gl.DYNAMIC_DRAW );
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(sphere_points));
 
     // Buffer to hold element array buffer data for the sphere's vertex order
     iBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphere_index), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
 
     // Establish vertex attributes for the point and normal array data
     var vPosition = gl.getAttribLocation( program, "vPosition");
@@ -195,7 +198,7 @@ function render(){
 
     modelViewMatrix = lookAt(eye, at , up);
     projectionMatrix = ortho(left, right, bottom, ytop, near, far);
-    translationMatrix = translate(0, 0, 0);
+    translationMatrix = c_translate(0, 0, 0);
     scalorMatrix = simple_scale(sphere_scalor);
 
     // Update the shader data for program matrices
@@ -205,16 +208,16 @@ function render(){
     gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(scalorMatrix));
 
     // Draw the main sphere
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
+
     gl.uniform4fv(colorMatrixLoc, sphere_color);
-    // gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0);
 
 
     // Draw the bacteria
     for( var i = 0; i < bacteria_list.length; i++) {
         if (bacteria_list[i].alive == true) {
             gl.uniformMatrix4fv(scalorMatrixLoc, false, flatten(simple_scale(bacteria_list[i].size))); // Set the uniform for scaling this bacteria
-            gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z))); // Set the uniform for translating this attribute
+            gl.uniformMatrix4fv(translationMatrixLoc, false, flatten(c_translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z))); // Set the uniform for translating this attribute
             gl.uniform4fv(colorMatrixLoc, bacteria_colors[bacteria_list[i].color]);
             gl.drawElements(gl.TRIANGLES, index, gl.UNSIGNED_SHORT, 0); // Draw the sphere buffer with the appropriate scaling and translation to make it appear as bacteria
         }
@@ -275,8 +278,8 @@ function canvasClicked(event) {
     var y = event.clientY - rect.top;
 
     // Move the canvas coordinates in range of the clipping region (-1 to 1)
-    x =((x * 2/canvas.width)  -1);
-    y =-1*((y * 2/canvas.height) -1);
+    x = ((x * 2/canvas.width)  -1);
+    y =- 1*((y * 2/canvas.height) -1);
 
     console.log("Y: " + y);
     console.log("X: " + x);
@@ -285,8 +288,8 @@ function canvasClicked(event) {
 }
 
 
-// Create a scalor vector
-function scale(sx, sy, sz) {
+// Create a scalor matrix
+function c_scale(sx, sy, sz) {
     return [
         sx, 0,  0,  0,
         0, sy,  0,  0,
@@ -295,7 +298,7 @@ function scale(sx, sy, sz) {
     ];
 }
 
-// Create a scalor vector
+// Create a scalor matrix
 function simple_scale(s) {
     return [
         s, 0,  0,  0,
@@ -305,8 +308,8 @@ function simple_scale(s) {
     ];
 }
 
-// Create a translation vector
-function translate (tx, ty, tz) {
+// Create a translation matrix
+function c_translate (tx, ty, tz) {
     return [
         1,  0,  0,  0,
         0,  1,  0,  0,
@@ -319,9 +322,9 @@ function translate (tx, ty, tz) {
 
 // Game timers
 setInterval(grow_bacteria, 100);
-setInterval(spawn_bacteria, 5000);
+setInterval(spawn_bacteria, 1000);
 setInterval(exert_drag, 32);
-setInterval(bacteria_collision_check, 1000);
+setInterval(bacteria_collision_check, 500);
 
 // Holds information about a single bacteria
 function Bacteria() {
@@ -329,7 +332,7 @@ function Bacteria() {
     var b = {};
     var i = Math.floor((Math.random() * latitude));
     var j = Math.floor((Math.random() * latitude));
-    var origin_distance = radius*sphere_scalor + 0.4;
+    var origin_distance = radius*sphere_scalor + bacteria_default_size + bacteria_protrusion;
 
     b.x = origin_distance * Math.cos(i * 2 * Math.PI / longitude) *  Math.sin(j * Math.PI / latitude);
     b.y = origin_distance * Math.cos(j * Math.PI / latitude);
@@ -337,12 +340,12 @@ function Bacteria() {
 
     b.color = Math.floor( Math.random() * 4);
     b.alive = true;
-    b.size = 0.5;
+    b.size = bacteria_default_size;
     b.order = bacteria_counter; bacteria_counter++;
 
     b.grow = function() { // Add another 'unit' to the bacteria
 
-        if (b.size < 0.5 + 0.1) {
+        if (b.size < bacteria_default_size + 0.035) {
             b.size += 0.0005;
         }else{
             decrease_score();
@@ -353,7 +356,6 @@ function Bacteria() {
         b.alive = false;
         increase_score();
     };
-
     return b;
 }
 
@@ -375,6 +377,7 @@ function grow_bacteria() {
     for (var i = 0; i< bacteria_list.length; i++) {
         bacteria_list[i].grow();
     }
+    oscillator+=0.017;
 }
 
 function spawn_bacteria() {
@@ -505,24 +508,24 @@ function countdown(){
 
 }
 
-// TODO: seems to work, ensure that the size of the bacteria correspond 1-1 with its radius
-// TODO: add some sort of merge action to the bacteria
+// Checks all bacteria for collision
+// On collision bacteria merge by setting the color of the younger bacteria to that of the older
 function bacteria_collision_check () {
     for (var i = 0; i < bacteria_list.length; i++) {
         if(bacteria_list[i].alive == true){
             for (var j = i+1; j < bacteria_list.length; j++) {
-                if (bacteria_collision(bacteria_list[i], bacteria_list[j])) {
-                    //console.log("Bacteria " + i + " collides with " + j + ".");
-                    if(bacteria_list[i].order > bacteria_list[j].order){
-                        console.log("Merging i: " + i + " j: " + j);
-                        bacteria_list[i].color = bacteria_list[j].color;
-                        bacteria_list[i].order = bacteria_list[j].order;
-                    }
-                    else{
-                        console.log("Merging j: " + j + " i: " + i);
-                        bacteria_list[j].color = bacteria_list[i].color;
-                        bacteria_list[j].order = bacteria_list[i].order;
-
+                if (bacteria_list[j].alive == true) {
+                    if (bacteria_collision(bacteria_list[i], bacteria_list[j])) {
+                        if(bacteria_list[i].order > bacteria_list[j].order){
+                            console.log("Merging i: " + i + " j: " + j);
+                            bacteria_list[i].color = bacteria_list[j].color;
+                            bacteria_list[i].order = bacteria_list[j].order;
+                        }
+                        else{
+                            console.log("Merging j: " + j + " i: " + i);
+                            bacteria_list[j].color = bacteria_list[i].color;
+                            bacteria_list[j].order = bacteria_list[i].order;
+                        }
                     }
                 }
             }
@@ -530,74 +533,88 @@ function bacteria_collision_check () {
     }
 }
 
-// Returns boolean indicating of two bacteria overlap
+// Returns boolean indicating if two bacteria overlap
 // Calculates the distance between the centers of both bacteria, then checks if the sum of radius'
 // are greater than the distance
 function bacteria_collision(bact1, bact2) {
     var distance = Math.sqrt(Math.pow((bact1.x - bact2.x), 2) +
-                            Math.pow((bact1.y - bact2.y),2 ) +
+                            Math.pow((bact1.y - bact2.y), 2) +
                             Math.pow((bact1.z - bact2.z), 2));
-    return distance < (bact1.size + bact2.size);
+    return distance < (bact1.size*bacteria_collision_scale + bact2.size*bacteria_collision_scale);
 }
 
 
-// Takes a point in clip space and a sphere and sees if they intersect
-// TODO: apply matrix transformation to the bacteria point before detection
+// Takes a point and a bacterial sphere and determines if they intersect
 function point_bacteria_collision(point, bact, size) {
-
-    var distance = Math.sqrt(Math.pow(point.x - bact.x, 2) +
-                            Math.pow(point.y - bact.y, 2) +
-                            Math.pow(point.z - bact.z, 2));
+    var distance = Math.sqrt((point.x - bact[0]) * (point.x - bact[0]) +
+                            (point.y - bact[1]) * (point.y - bact[1]) +
+                            (point.z - bact[2]) * (point.z - bact[2]));
 
     console.log("distance: " + distance);
-    console.log("size: " + size);
+    console.log("size: " + size/right);
 
-    return distance < size;
+    return distance < size/right; // right is used as half the size of clip space to scale size of sphere
 }
 
-// Takes mouse (x,y) and checks the mouse against each bacteria for intersection.
-// The z point for the mouse is given by the each bacteria's z coordinate
+// Determine if the mouse's 3D coordinates intersect any of the bacterial spheres
+// Applies the same matrix transformation as the shader to get the center of each bacteria in clip space
+// Moves the mouse's coordinates into 3D by taking each bacteria's Z-coord in turn
 function mouse_collision_check(mouse) {
 
-    var matrix = mult(modelview_matrix(), projection_matrix());
-
-    var trans_matrix;
-    var temp_matrix;
     var collision_point;
+
+    var matrix = mult(projection_matrix(), modelview_matrix());
 
     console.log("Mouse collision check.");
     for(var i = 0; i < bacteria_list.length; i++) {
 
-        temp_matrix = translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z);
-        temp_matrix.matrix = true;
-        // Apply the collision matrix transformation to the point stored in the bacteria
-        trans_matrix = mult(matrix, temp_matrix);
+        if (bacteria_list[i].alive == true) {
 
-        collision_point = vector_mult(trans_matrix, vec4(0, 0, 0, 1));
+            var s_matrix = scale(bacteria_list[i].size, bacteria_list[i].size, bacteria_list[i].size);
+            var f_matrix = mult(matrix, s_matrix);
+            var t_matrix = mult(f_matrix, translate(bacteria_list[i].x, bacteria_list[i].y, bacteria_list[i].z));
 
-        var mouse_map = {x: mouse.x, y: mouse.y, z: collision_point.z};
-        console.log("Mouse map:");
-        console.log(mouse_map);
+            // Default sphere is centered at the origin, so apply the transformation matrix to the point at the origin to
+            // Get the origin of the sphere
+            collision_point = vector_mult(t_matrix, vec4(0, 0, 0, 1));
 
-        var hit = point_bacteria_collision(mouse_map, collision_point, bacteria_list[i].size);
+            // Mouse's representation in 3D space
+            var mouse_map = {x: mouse.x, y: mouse.y, z: collision_point[2]};
 
-        // TODO: take the bacteria merger into account
-        if (hit == true) {
-            console.log("Mouse collides with bacteria " + i);
-            bacteria_list[i].kill();
-            hit = false;
+            var hit = point_bacteria_collision(mouse_map, collision_point, bacteria_list[i].size);
+
+            // TODO: take the bacteria merger into account
+            if (hit == true) {
+                console.log("Mouse collides with bacteria " + i);
+                bacteria_list[i].kill();
+                hit = false;
+                kill_merged_bacteria(bacteria_list[i]);
+            }
         }
     }
 }
 
+// Recursively kill all bacteria touching the given bacteria, or a neighbour of that bacteria
+function kill_merged_bacteria(bacteria) {
+    for (var j = 0; j < bacteria_list.length; j++) {
+        if (bacteria_list[j].alive ==  true) {
+            if (bacteria_collision(bacteria, bacteria_list[j])) {
+                bacteria_list[j].kill();
+                kill_merged_bacteria(bacteria_list[j]);
+            }
+        }
+    }
+}
+
+
 // Adapted MV mult method to take a vector as the second argument
 function vector_mult( m, v )
 {
-    var m ={x : m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
+    var m_2 ={x : (m[0][0] * v[0]) + (m[0][1] * v[1]) + (m[0][2] * v[2]) + (m[0][3] * v[3]),
             y : m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3],
-            z : m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3],
-            w : m[3][0] * v[0] + m[3][1] * v[1] + m[3][2] * v[2] + m[3][3] * v[3]};
-    return mat4(m.x, m.y, m.z, m.w);
+            z : m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3]};
+
+    return vec4(m_2.x, m_2.y, m_2.z, 1);
 }
 
 // Find out where the center of the sphere is moved to in the matrix and

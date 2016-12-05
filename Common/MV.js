@@ -601,10 +601,10 @@ function mix( u, v, s )
 // Vector and Matrix functions
 //
 
-function scale( s, u )
+function scale2( s, u )
 {
     if ( !Array.isArray(u) ) {
-        throw "scale: second parameter " + u + " is not a vector";
+        throw "c_scale: second parameter " + u + " is not a vector";
     }
 
     result = [];
