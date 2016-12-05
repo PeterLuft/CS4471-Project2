@@ -2,7 +2,6 @@
 <html>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
-
 attribute vec4 vPosition;
 attribute vec4 vNormal;
 
@@ -37,7 +36,7 @@ main()
 
         // Transform vertex normal into eye coordinates
 
-        vec3 N = (modelViewMatrix*vNormal).xyz;
+        vec3 N = normalize((modelViewMatrix*vNormal).xyz);
 
         // Compute terms in the illumination equation
         vec4 ambient = ambientProduct;
@@ -46,7 +45,7 @@ main()
         vec4  diffuse = Kd * diffuseProduct;
 
         float Ks = pow( max(dot(N, H), 0.0), shininess );
-        vec4  specular = Ks * specularProduct;
+        vec4 specular = Ks * specularProduct;
 
         if( dot(L, N) < 0.0 ) {
             specular = vec4(0.0, 0.0, 0.0, 1.0);

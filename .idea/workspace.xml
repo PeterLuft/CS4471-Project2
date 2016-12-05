@@ -28,11 +28,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.84615386">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="game.html" pinned="false" current-in-tab="true">
+          <file leaf-file-name="game.html" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/game/game.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="2.0964127">
-                  <caret line="110" column="70" selection-start-line="110" selection-start-column="70" selection-end-line="110" selection-end-column="70" />
+                <state vertical-scroll-proportion="-26.807692">
+                  <caret line="53" column="54" selection-start-line="53" selection-start-column="54" selection-end-line="53" selection-end-column="54" />
                   <folding>
                     <element signature="n#style#0;n#canvas#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
                   </folding>
@@ -40,11 +40,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="game.js" pinned="false" current-in-tab="false">
+          <file leaf-file-name="game.js" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/game/game.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.0">
-                  <caret line="640" column="30" selection-start-line="640" selection-start-column="30" selection-end-line="640" selection-end-column="30" />
+                <state vertical-scroll-proportion="-0.11111111">
+                  <caret line="132" column="6" selection-start-line="132" selection-start-column="6" selection-end-line="132" selection-end-column="6" />
                   <folding />
                 </state>
               </provider>
@@ -80,7 +80,7 @@
             <entry file="file://$PROJECT_DIR$/game/game.js">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="4.1666665">
-                  <caret line="595" column="0" selection-start-line="595" selection-start-column="0" selection-end-line="595" selection-end-column="0" />
+                  <caret line="589" column="0" selection-start-line="589" selection-start-column="0" selection-end-line="589" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -112,8 +112,8 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Common/MV.js" />
-        <option value="$PROJECT_DIR$/game/game.js" />
         <option value="$PROJECT_DIR$/game/game.html" />
+        <option value="$PROJECT_DIR$/game/game.js" />
       </list>
     </option>
   </component>
@@ -308,7 +308,13 @@
       <option name="project" value="LOCAL" />
       <updated>1480903571767</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Added lighting controls">
+      <created>1480906794709</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1480906794709</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -346,7 +352,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Added colors to the bacteria and sphere" />
     <MESSAGE value="Fixed lighting calculations&#10;&#10;Added bacteria merge&#10;&#10;Changed colours&#10;&#10;Fixed mouse collision calculations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed lighting calculations&#10;&#10;Added bacteria merge&#10;&#10;Changed colours&#10;&#10;Fixed mouse collision calculations" />
+    <MESSAGE value="Added lighting controls" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added lighting controls" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -467,21 +474,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/game/game.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="640" column="30" selection-start-line="640" selection-start-column="30" selection-end-line="640" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/game/game.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.0964127">
-          <caret line="110" column="70" selection-start-line="110" selection-start-column="70" selection-end-line="110" selection-end-column="70" />
+        <state vertical-scroll-proportion="-26.807692">
+          <caret line="53" column="54" selection-start-line="53" selection-start-column="54" selection-end-line="53" selection-end-column="54" />
           <folding>
             <element signature="n#style#0;n#canvas#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game/game.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.11111111">
+          <caret line="132" column="6" selection-start-line="132" selection-start-column="6" selection-end-line="132" selection-end-column="6" />
+          <folding />
         </state>
       </provider>
     </entry>

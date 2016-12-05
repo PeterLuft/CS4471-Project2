@@ -31,11 +31,12 @@ var bottom = -3.0;
 var lightPosition = vec4(1.0, 1.0, 1.2, 0.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
-var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 0.0, 1.0, 0.0, 1.0 );
 
 var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
 var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
-var materialSpecular = vec4( 1.0, 0.8, 0.0, 1.0 );
+var materialSpecular = vec4( 0.0, 0.8, 0.0, 1.0 );
+
 var materialShininess = 10.0;
 
 var modelViewMatrix, projectionMatrix, scalorMatrix, translationMatrix;
@@ -136,9 +137,9 @@ window.onload = function init() {
     gl.useProgram( program );
 
     // Establish lighting matrix products
-    ambientProduct = mult(lightAmbient, materialAmbient);
-    diffuseProduct = mult(lightDiffuse, materialDiffuse);
-    specularProduct = mult(lightSpecular, materialSpecular);
+    var ambientProduct = mult(lightAmbient, materialAmbient);
+    var diffuseProduct = mult(lightDiffuse, materialDiffuse);
+    var specularProduct = mult(lightSpecular, materialSpecular);
 
     // Calculate a sphere, given the number of lines of latitude and longitude
     calculate_sphere(latitude, longitude);
@@ -161,7 +162,6 @@ window.onload = function init() {
     iBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphere_index), gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
 
     // Establish vertex attributes for the point and normal array data
     var vPosition = gl.getAttribLocation( program, "vPosition");
@@ -185,11 +185,7 @@ window.onload = function init() {
     gl.uniform4fv( gl.getUniformLocation(program, "specularProduct"),flatten(specularProduct) );
     gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
     gl.uniform1f (gl.getUniformLocation(program, "lightingEnabled"), lightingEnabled ? 1.0 : 0.0);
-    gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
-
-    console.log(bacteria_list[0]);
-
-    //render();
+    gl.uniform1f( gl.getUniformLocation(program, "shininess"), materialShininess );
 };
 
 // Render shapes to the screen
@@ -226,8 +222,6 @@ function render(){
     }
     window.requestAnimFrame(render);
 }
-
-
 
 function calculate_sphere (latitude, longitude) {
     for (var j=0; j <= latitude; j++) {
