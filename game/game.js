@@ -58,6 +58,24 @@ var playing = false;
 var bacteria_colors;
 var sphere_color;
 
+
+var growID;
+var checkID;
+var spawnID;
+var timeID;
+
+
+var difficulty;
+
+
+var growRate = [500, 100, 50];
+var spawnRate = [3000, 1000, 500];
+var timeSet = [20, 30, 40];
+var time;
+
+
+
+
 var bacteria_default_size = 0.3;
 var bacteria_protrusion = 2.8;
 var bacteria_collision_scale = sphere_scalor + bacteria_protrusion/right;
@@ -95,6 +113,11 @@ window.onkeydown = function(e){
 };
 
 window.onload = function init() {
+
+    difficulty = 1;
+
+    document.getElementById("diff_value").innerHTML = difficulty;
+
     canvas = document.getElementById( "gl-canvas" );
 
     canvas.addEventListener('click', canvasClicked);
@@ -315,10 +338,9 @@ function c_translate (tx, ty, tz) {
 // GAME METHODS
 
 // Game timers
-setInterval(grow_bacteria, 100);
-setInterval(spawn_bacteria, 1000);
+
+
 setInterval(exert_drag, 32);
-setInterval(bacteria_collision_check, 500);
 
 // Holds information about a single bacteria
 function Bacteria() {
@@ -355,19 +377,25 @@ function Bacteria() {
 
 function decrease_score() {
     score--;
-    if (score == 0) {
-        game_over = true;
+    if (score <= 0) {
+        loseGame();
     }
+    document.getElementById("score_value").innerHTML = score;
+
 }
 
 function increase_score() {
-    score += 5;
+    score += 10;
     if (score >= hi_score) {
         hi_score = score;
+        document.getElementById("hi_score_value").innerHTML = hi_score;
     }
+    document.getElementById("score_value").innerHTML = score;
+
 }
 
 function grow_bacteria() {
+    console.log("growing bateria");
     for (var i = 0; i< bacteria_list.length; i++) {
         bacteria_list[i].grow();
     }
@@ -413,8 +441,7 @@ function quitPressed(){
 function replayPressed(){
     quit();
     launch();
-    hi_score = 0;
-    document.getElementById("hi_score_value").innerHTML = 0;
+   // hi_score = 0;
     gameView.style.display = 'block';
     gameoverView.style.display = 'none';
     winView.style.display = 'none';
@@ -436,17 +463,25 @@ function winGame(){
 
 //Lower Game Control Functions
 function launch(){
-    document.getElementById("score_value").innerHTML = score;
+    time = timeSet[difficulty];
+    score = 0;
+    console.log("Launching game on difficulty level: " + difficulty);
+
+
+    growID = setInterval(grow_bacteria, growRate[difficulty]);
+    spawnID = setInterval(spawn_bacteria, spawnRate[difficulty]);
+    checkID = setInterval(bacteria_collision_check, 500);
+    timeID = setInterval(countdown, 1000);
+
+    document.getElementById("score_value").innerHTML = "" + score;
+    document.getElementById("hi_score_value").innerHTML = "" + hi_score;
+    document.getElementById("time_value").innerHTML = "" + time;
+
     gl.clear( gl.COLOR_BUFFER_BIT );
-    console.log("Launching game session...");
     game_over = false;
     playing = true;
-    document.getElementById("time_value").innerHTML = 30;
-
-    //TODO Initialize the timed game elements
 
     render();
-
 }
 
 function quit(){
@@ -458,46 +493,47 @@ function quit(){
 }
 
 function difficulty_up(){
-    //TODO change difficulty based on 3D game
+    if(difficulty < 2) {
+        difficulty += 1;
+    }
+    document.getElementById("diff_value").innerHTML = difficulty;
+
+    console.log("difficulty is at " + difficulty);
+}
+
+function difficulty_down(){
+    if(difficulty > 0) {
+        difficulty -= 1;
+    }
+    document.getElementById("diff_value").innerHTML = difficulty;
+
+    console.log("difficulty is at " + difficulty);
 }
 
 function gameOver(){
     //Instance of game has ended
     game_over = true;
-    //TODO remove intervals and all game data once created
+    clearInterval(growID);
+    clearInterval(spawnID);
+    clearInterval(checkID);
+    clearInterval(timeID);
     score = 0;
-    time = 30.0000;
+    bacteria_list = [];
+    bacteria_counter = 0;
     console.log("game over, values cleared");
 }
 
-function update_score(value){
-    // Update the game score
-    if(score < 0){
-        score = 0;
-        document.getElementById("score_value").innerHTML = score;
-        loseGame();
-    }else if (game_over == false){
-        score += value;
-        document.getElementById("score_value").innerHTML = score;
-
-        if (hi_score < score) {
-            hi_score = score;
-            document.getElementById("hi_score_value").innerHTML = hi_score;
-        }
-    }
-
-}
 
 function countdown(){
     if(game_over != true && time > 0.00){
         time -= 1;
         console.log(time);
-        document.getElementById("time_value").innerHTML = time;
+        document.getElementById("time_value").innerHTML = "" + time;
     }
     else{
-        //TODO player reached the time limit. Stop spawning more bacteria
         time = 0;
-        document.getElementById("time_value").innerHTML = time;
+        document.getElementById("time_value").innerHTML = "" + time;
+        winGame();
     }
 
 }

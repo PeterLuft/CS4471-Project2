@@ -87,6 +87,12 @@ main()
         Bacteria III: Making America Great Again
     </h1>
     <input type="button" value="START" onclick="startPressed()">
+    <br/><br/>
+    <input type="button" value ="-" onclick="difficulty_down()">
+    <h2>Difficult Level
+        <span id="diff_value"></span>
+    </h2>
+    <input type="button" value="+" onclick="difficulty_up()">
 </div>
 
 <div id="game-view">
@@ -100,7 +106,6 @@ main()
 
     <div id="game-control">
         <input type="button" value="QUIT" onclick="quitPressed()">
-        <input type="button" value="Lighting ON/OFF" onclick="toggleLighting()">
     </div>
 
     <div id="gameover-view">
@@ -118,7 +123,12 @@ main()
             <input type="button" value="MENU" onclick="quitPressed()">
         </div>
     </div>
+    <br/><br/>
+    <input type="button" value="Lighting ON/OFF" onclick="toggleLighting()">
+
 </div>
+
+
 
 </body>
 
