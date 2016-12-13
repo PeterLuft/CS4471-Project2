@@ -73,6 +73,8 @@ var spawnRate = [3000, 1000, 500];
 var timeSet = [20, 30, 40];
 var time;
 
+var diffSet = ['Easy', 'Normal', 'Hard'];
+
 
 
 
@@ -114,9 +116,9 @@ window.onkeydown = function(e){
 
 window.onload = function init() {
 
-    difficulty = 1;
+    difficulty = 0;
 
-    document.getElementById("diff_value").innerHTML = difficulty;
+    document.getElementById("diff_value").innerHTML = diffSet[difficulty];
 
     canvas = document.getElementById( "gl-canvas" );
 
@@ -138,7 +140,7 @@ window.onload = function init() {
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    gl.clearColor(0, 0, 0, 0.5);
 
     // set the colors bacteria could be
     bacteria_colors = [
@@ -496,7 +498,7 @@ function difficulty_up(){
     if(difficulty < 2) {
         difficulty += 1;
     }
-    document.getElementById("diff_value").innerHTML = difficulty;
+    document.getElementById("diff_value").innerHTML = diffSet[difficulty];
 
     console.log("difficulty is at " + difficulty);
 }
@@ -505,7 +507,7 @@ function difficulty_down(){
     if(difficulty > 0) {
         difficulty -= 1;
     }
-    document.getElementById("diff_value").innerHTML = difficulty;
+    document.getElementById("diff_value").innerHTML = diffSet[difficulty];
 
     console.log("difficulty is at " + difficulty);
 }
